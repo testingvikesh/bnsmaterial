@@ -1,0 +1,29 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} ^/cgi-bin/ [NC]
+    RewriteRule ^ - [L]
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
+    RewriteRule ^ public%{REQUEST_URI} [L]
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <FilesMatch "(^\.env|composer\.(json|lock)|artisan|package(-lock)?\.json)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+    <FilesMatch "(^\.env|composer\.(json|lock)|artisan|package(-lock)?\.json)$">
+        Deny from all
+    </FilesMatch>
+</IfModule>
+
+Options -Indexes
+DirectoryIndex public/index.php index.php
