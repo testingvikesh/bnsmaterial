@@ -83,6 +83,8 @@ class MaterialSessionFormatTest extends TestCase
 
         $this->assertSame('jewellery', $plan['family']);
         $this->assertCount(15, $plan['rows']);
+        $this->assertSame(['Gold & Diamond Jewellery Retail Business'], $plan['intro_points']);
+        $this->assertSame(['Gold & Diamond Jewellery'], $plan['product_points']);
         $this->assertSame('Jewellery That Tells Your Story', $plan['rows'][0]['en']);
         $this->assertSame('તમારી કહાની કહેતી જ્વેલરી', $plan['rows'][0]['gu']);
         $this->assertCount(5, $plan['examples']);

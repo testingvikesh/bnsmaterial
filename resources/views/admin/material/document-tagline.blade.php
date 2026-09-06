@@ -68,6 +68,7 @@
             font-size: 16px;
             font-weight: 500;
             color: #0a1d37;
+            list-style: disc;
         }
         .point-list li:last-child { margin-bottom: 0; }
         .point-list strong {
@@ -120,6 +121,14 @@
 @php
     $plan = is_array($tagline ?? null) ? $tagline : [];
     $languagePacks = $languages ?: ($plan['languages'] ?? []);
+    $introText = (string) ($plan['intro'] ?? $facts['intro'] ?? '');
+    $productText = (string) ($plan['product'] ?? $facts['products'] ?? '');
+    $introPoints = is_array($plan['intro_points'] ?? null) && $plan['intro_points'] !== []
+        ? $plan['intro_points']
+        : \App\Support\MaterialCopyPoints::from($introText);
+    $productPoints = is_array($plan['product_points'] ?? null) && $plan['product_points'] !== []
+        ? $plan['product_points']
+        : \App\Support\MaterialCopyPoints::from($productText);
 @endphp
 <div class="page">
     <header class="hero">
@@ -159,11 +168,27 @@
         </div>
         <div class="fact-card wide">
             <span id="labelIntroduction">Business Introduction:</span>
-            <div class="member-intro"></div>
+            <div class="member-intro">
+                @if($introPoints !== [])
+                    <ul class="point-list">
+                        @foreach($introPoints as $point)
+                            <li>{{ $point }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
         </div>
         <div class="fact-card wide">
             <span id="labelProducts">Business Main Product:</span>
-            <div class="member-product"></div>
+            <div class="member-product">
+                @if($productPoints !== [])
+                    <ul class="point-list">
+                        @foreach($productPoints as $point)
+                            <li>{{ $point }}</li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
         </div>
     </section>
 
@@ -265,8 +290,10 @@
 (function () {
     const languagePacks = @json($languagePacks ?: []);
     const businessFacts = {
-        intro: @json($plan['intro'] ?? $facts['intro'] ?? ''),
-        products: @json($plan['product'] ?? $facts['products'] ?? ''),
+        intro: @json($introText),
+        products: @json($productText),
+        introPoints: @json($introPoints),
+        productPoints: @json($productPoints),
         businessName: @json($plan['business_name'] ?? $facts['business_name'] ?? ''),
         memberName: @json($facts['member_name'] ?? ''),
         category: @json($plan['category'] ?? $facts['category'] ?? '')
@@ -379,8 +406,44 @@
     function splitSentences(value) {
         const raw = String(value).trim();
         if (!raw) return [];
-        const parts = raw.split(/(?<=[.!?…।])\s+/).map(function (s) { return s.trim(); }).filter(Boolean);
+        const protectedValue = raw.replace(/\b(Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|No|vs|etc|Inc|Ltd|Pvt|Co)\./gi, '$1<prd>');
+        let parts = protectedValue.split(/(?<=[.!?…।])\s+(?=\S)/).map(function (s) {
+            return s.replace(/<prd>/g, '.').trim();
+        }).filter(Boolean);
+        if (parts.length <= 1) {
+            parts = protectedValue.split(/(?<=[.!?…।])(?=[A-Z“"'])/).map(function (s) {
+                return s.replace(/<prd>/g, '.').trim();
+            }).filter(Boolean);
+        }
         return parts.length ? parts : [raw];
+    }
+    function splitNumbered(value) {
+        if (!/(?:^|\s)\d+[.)]\s+\S/.test(value)) return [value];
+        const parts = value.split(/(?=(?:^|\s)\d+[.)]\s+\S)/).map(function (line) {
+            return line.replace(/^\s*\d+[.)]\s+/, '').trim();
+        }).filter(Boolean);
+        return parts.length > 1 ? parts : [value];
+    }
+    function splitLabeled(value) {
+        const re = /(?:^|(?<=[.!?…।]\s)|(?<=[a-z0-9,;]\s))((?:For\s+[A-Z][^:]{1,48}|(?:[A-Z][A-Za-z0-9’'\/+-]+(?:\s+(?:&|and|\/|[A-Z][A-Za-z0-9’'\/+-]+)){0,6})):)/g;
+        const starts = [];
+        let match;
+        while ((match = re.exec(value))) {
+            if (starts.indexOf(match.index) === -1) starts.push(match.index);
+        }
+        if (!starts.length || (starts.length === 1 && starts[0] === 0)) return [value];
+        const parts = [];
+        let cursor = 0;
+        starts.forEach(function (start) {
+            if (start > cursor) {
+                const before = value.slice(cursor, start).trim();
+                if (before) parts.push(before);
+            }
+            cursor = start;
+        });
+        const tail = value.slice(cursor).trim();
+        if (tail) parts.push(tail);
+        return parts.length > 1 ? parts : [value];
     }
     function toPoints(value) {
         if (Array.isArray(value)) {
@@ -391,33 +454,53 @@
         let chunks = raw.split(/\n+|•|●/).map(function (line) {
             return line.replace(/^\s*(?:[-*•●]|\d+[.)])\s*/, '').trim();
         }).filter(Boolean);
-        if (chunks.length <= 1 && /\d+[.)]\s+\S/.test(raw)) {
-            chunks = raw.split(/(?=\s*\d+[.)]\s+)/).map(function (line) {
-                return line.replace(/^\s*(?:[-*•●]|\d+[.)])\s*/, '').trim();
-            }).filter(Boolean);
+        if (chunks.length <= 1) {
+            const numbered = splitNumbered(raw);
+            if (numbered.length > 1) chunks = numbered;
+        }
+        if (chunks.length <= 1) {
+            const labeled = splitLabeled(raw);
+            if (labeled.length > 1) chunks = labeled;
         }
         const points = [];
         chunks.forEach(function (chunk) {
+            const numbered = splitNumbered(chunk);
+            if (numbered.length > 1) {
+                numbered.forEach(function (item) {
+                    const sentences = splitSentences(item);
+                    (sentences.length > 1 ? sentences : [item]).forEach(function (sentence) { points.push(sentence); });
+                });
+                return;
+            }
             const sentences = splitSentences(chunk);
             if (sentences.length > 1) {
                 sentences.forEach(function (sentence) { points.push(sentence); });
-            } else {
-                points.push(chunk);
+                return;
             }
+            const labeled = splitLabeled(chunk);
+            if (labeled.length > 1) {
+                labeled.forEach(function (item) { points.push(item); });
+                return;
+            }
+            points.push(chunk);
         });
         return points;
     }
     function renderFactPoints() {
-        const pointsHtml = function (value) {
-            const points = toPoints(value);
+        const pointsHtml = function (ready, fallback) {
+            const points = (Array.isArray(ready) && ready.length) ? ready : toPoints(fallback);
             return points.length
                 ? '<ul class="point-list">' + points.map(function (point) {
                     return '<li>' + emphasize(point) + '</li>';
                 }).join('') + '</ul>'
                 : '';
         };
-        document.querySelectorAll('.member-intro').forEach(function (el) { el.innerHTML = pointsHtml(businessFacts.intro); });
-        document.querySelectorAll('.member-product').forEach(function (el) { el.innerHTML = pointsHtml(businessFacts.products); });
+        document.querySelectorAll('.member-intro').forEach(function (el) {
+            el.innerHTML = pointsHtml(businessFacts.introPoints, businessFacts.intro);
+        });
+        document.querySelectorAll('.member-product').forEach(function (el) {
+            el.innerHTML = pointsHtml(businessFacts.productPoints, businessFacts.products);
+        });
     }
     function applyLanguage(language) {
         const pack = languagePacks[language] || languagePacks.en || {};

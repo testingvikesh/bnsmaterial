@@ -27,6 +27,8 @@ class MaterialTaglineMasterclass
             'category' => $cat,
             'intro' => $intro,
             'product' => $product,
+            'intro_points' => MaterialCopyPoints::from($intro),
+            'product_points' => MaterialCopyPoints::from($product),
             'member_name' => (string) ($facts['member_name'] ?? ''),
             'rows' => $rows,
             'examples' => $examples,

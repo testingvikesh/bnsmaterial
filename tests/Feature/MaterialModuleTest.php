@@ -770,6 +770,8 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('ગુજરાતી', $html);
         $this->assertStringContainsString('point-list', $html);
         $this->assertStringContainsString('member-intro', $html);
+        $this->assertStringContainsString('<li>Gold &amp; Diamond Jewellery Retail Business</li>', $html);
+        $this->assertStringContainsString('<li>Gold &amp; Diamond Jewellery</li>', $html);
         $this->assertStringContainsString('function toPoints', $html);
         $this->assertStringNotContainsString('Create 15 taglines for ABC Jewellery', $html);
     }
