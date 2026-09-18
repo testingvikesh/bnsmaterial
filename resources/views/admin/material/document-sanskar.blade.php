@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['business_name'] }} — 16 Sanskar Relationship Plan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --navy: #071422;
@@ -13,12 +13,30 @@
             --gold: #ffb800;
             --line: #eadfce;
             --paper: #fffdf9;
+            --font-ui: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            --font-gu: "Noto Sans Gujarati", "Nirmala UI", Poppins, Arial, sans-serif;
+            --font-mr: "Noto Sans Devanagari", "Nirmala UI", Mangal, Poppins, Arial, sans-serif;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
+        html[lang="gu"] { --font-ui: var(--font-gu); }
+        html[lang="hi"],
+        html[lang="mr"] { --font-ui: var(--font-mr); }
+        html[lang="gu"] h1, html[lang="gu"] h2, html[lang="gu"] h3,
+        html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3,
+        html[lang="mr"] h1, html[lang="mr"] h2, html[lang="mr"] h3 {
+            letter-spacing: 0;
+            font-kerning: normal;
+        }
+        html[lang="gu"] .kicker, html[lang="gu"] .label, html[lang="gu"] .activity h4, html[lang="gu"] .formula small,
+        html[lang="hi"] .kicker, html[lang="hi"] .label, html[lang="hi"] .activity h4, html[lang="hi"] .formula small,
+        html[lang="mr"] .kicker, html[lang="mr"] .label, html[lang="mr"] .activity h4, html[lang="mr"] .formula small {
+            letter-spacing: 0;
+            text-transform: none;
+        }
         body {
             margin: 0;
-            font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            font-family: var(--font-ui);
             background:
                 radial-gradient(1100px 480px at 8% -8%, rgba(255,107,0,.16), transparent 55%),
                 radial-gradient(900px 420px at 100% 0%, rgba(255,184,0,.14), transparent 50%),
@@ -44,12 +62,12 @@
         .brand-mark small { display: block; color: #ffb800; letter-spacing: .12em; text-transform: uppercase; font-size: 10px; font-weight: 800; }
         .brand-mark strong { display: block; font-size: 18px; line-height: 1.2; }
         .top-meta { color: #cbd5e1; font-size: 13px; font-weight: 600; text-align: right; }
-        .language-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 8px; }
+        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; }
         .language-buttons button {
             border: 1px solid rgba(255,255,255,.28);
             background: rgba(255,255,255,.08);
-            color: #fff; padding: 8px 14px; border-radius: 999px;
-            cursor: pointer; font-weight: 700; font-size: 13px;
+            color: #fff; padding: 6px 10px; border-radius: 999px;
+            cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; flex-shrink: 0;
         }
         .language-buttons button:hover,
         .language-buttons button.active { background: #fff; color: #071422; }
@@ -60,7 +78,7 @@
             box-shadow: 0 30px 70px rgba(16, 36, 61, .12);
         }
         .kicker { color: #ffb800; letter-spacing: .16em; text-transform: uppercase; font-size: 12px; font-weight: 800; }
-        .hero h1 { font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif; font-size: clamp(32px, 5vw, 56px); margin: 8px 0 10px; line-height: 1.08; }
+        .hero h1 { font-family: var(--font-ui); font-size: clamp(32px, 5vw, 56px); margin: 8px 0 10px; line-height: 1.08; }
         .hero p { margin: 0; color: #ffe7cc; font-size: 18px; max-width: 54ch; }
         .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
         .chip { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.16); padding: 8px 12px; border-radius: 999px; font-size: 13px; }
@@ -75,7 +93,7 @@
             padding: 24px; margin-top: 16px; box-shadow: 0 16px 40px rgba(16, 36, 61, .05);
         }
         .panel h2 {
-            font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            font-family: var(--font-ui);
             font-size: 28px; margin: 0; color: var(--navy);
         }
         .title-row {
@@ -124,7 +142,7 @@
             box-shadow: 0 10px 24px rgba(16, 36, 61, .04);
         }
         .activity .no { color: #ff6b00; font-weight: 800; letter-spacing: .12em; font-size: 11px; text-transform: uppercase; }
-        .activity h3 { font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif; margin: 0; font-size: 22px; }
+        .activity h3 { font-family: var(--font-ui); margin: 0; font-size: 22px; }
         .activity .title-row { margin: 6px 0 0; }
         .activity .reveal-body { margin-top: 10px; }
         .meta { color: #64748b; font-size: 13px; font-weight: 700; margin: 0 0 10px; }
@@ -141,7 +159,7 @@
             background: linear-gradient(135deg, #ff6b00, #c2410c);
         }
         .formula small { display: block; letter-spacing: .14em; text-transform: uppercase; font-weight: 800; opacity: .85; }
-        .formula strong { display: block; font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif; font-size: 26px; margin: 8px 0 10px; }
+        .formula strong { display: block; font-family: var(--font-ui); font-size: 26px; margin: 8px 0 10px; }
         .footer { text-align: center; color: #64748b; padding: 18px 8px 0; }
         strong { color: #c2410c; font-weight: 800; }
         .hero strong, .formula strong, .chip strong { color: inherit; }
@@ -199,17 +217,17 @@
                 <button onclick="changeLanguage('hi', this)">हिन्दी</button>
                 <button onclick="changeLanguage('mr', this)">मराठी</button>
             </div>
-            Customer Relationship Plan<br>{{ $plan['business_type'] ?? $facts['category'] }} · {{ $plan['model'] ?? 'B2B + B2C' }}
+            <span data-i18n="topMeta">Customer Relationship Plan</span><br><span data-copy-text="business_type">{{ $plan['business_type'] ?? $facts['category'] }}</span> · <span data-copy-text="model">{{ $plan['model'] ?? 'B2B + B2C' }}</span>
         </div>
     </div>
 
     <section class="hero">
         <div class="kicker" data-i18n="heroKicker">Customer 16 Sanskar Relationship Plan</div>
         <h1>{{ $biz }}</h1>
-        <p>{{ $plan['business_type'] ?? $facts['category'] }} · {{ $plan['model'] ?? 'B2B + B2C' }} · <span data-i18n="heroLine">16 meaningful experiences a year.</span></p>
+        <p><span data-copy-text="business_type">{{ $plan['business_type'] ?? $facts['category'] }}</span> · <span data-copy-text="model">{{ $plan['model'] ?? 'B2B + B2C' }}</span> · <span data-i18n="heroLine">16 meaningful experiences a year.</span></p>
         <div class="chips" id="customerChips">
-            @foreach($customers as $customer)
-                <span class="chip">{{ $customer }}</span>
+            @foreach($customers as $customerIndex => $customer)
+                <span class="chip" data-copy-customer="{{ $customerIndex }}">{{ $customer }}</span>
             @endforeach
         </div>
     </section>
@@ -234,13 +252,13 @@
             </div>
             <div class="tile">
                 <span class="label" data-i18n="labelBusinessType">Business Type</span>
-                <strong>{{ $plan['business_type'] ?? $facts['category'] }}</strong>
-                <div style="margin-top:8px;color:#64748b;font-weight:700;">{{ $plan['model'] ?? '' }}</div>
+                <strong data-copy-text="business_type">{{ $plan['business_type'] ?? $facts['category'] }}</strong>
+                <div style="margin-top:8px;color:#64748b;font-weight:700;" data-copy-text="model">{{ $plan['model'] ?? '' }}</div>
             </div>
             <div class="tile wide">
                 <span class="label" data-i18n="labelIntroduction">Business Introduction</span>
                 @if($introPoints !== [])
-                    <ul class="point-list">
+                    <ul class="point-list" data-copy-intro>
                         @foreach($introPoints as $point)
                             <li>{!! $em($point) !!}</li>
                         @endforeach
@@ -250,7 +268,7 @@
             <div class="tile wide">
                 <span class="label" data-i18n="labelProducts">Main Products / Services</span>
                 @if($productPoints !== [])
-                    <ul class="point-list">
+                    <ul class="point-list" data-copy-products>
                         @foreach($productPoints as $point)
                             <li>{!! $em($point) !!}</li>
                         @endforeach
@@ -260,14 +278,14 @@
             <div class="tile wide">
                 <span class="label" data-i18n="labelCustomers">Target Customers</span>
                 <ul class="point-list" id="customerList">
-                    @foreach($customers as $customer)
-                        <li>{!! $em($customer) !!}</li>
+                    @foreach($customers as $customerIndex => $customer)
+                        <li data-copy-customer="{{ $customerIndex }}">{!! $em($customer) !!}</li>
                     @endforeach
                 </ul>
             </div>
             <div class="tile wide">
                 <span class="label" data-i18n="labelGoal">Annual Goal</span>
-                <div class="goal" id="annualGoal">{!! $em((string) ($plan['annual_goal'] ?? '')) !!}</div>
+                <div class="goal" id="annualGoal" data-copy-text="annual_goal">{!! $em((string) ($plan['annual_goal'] ?? '')) !!}</div>
             </div>
         </div>
         </div>
@@ -293,7 +311,7 @@
                         <tr>
                             <td class="srno">{{ (int) ($row['no'] ?? ($index + 1)) }}</td>
                             <td class="sanskar" data-sanskar="{{ $row['sanskar'] ?? '' }}">{{ $row['sanskar'] ?? '' }}</td>
-                            <td>{!! $em((string) ($row['activity'] ?? '')) !!}</td>
+                            <td data-copy-calendar="{{ $index }}">{!! $em((string) ($row['activity'] ?? '')) !!}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -309,20 +327,20 @@
         </div>
         <div class="reveal-body">
         <div class="grid" id="activityGrid">
-            @foreach($activities as $activity)
+            @foreach($activities as $activityIndex => $activity)
                 <article class="activity reveal" id="activity-{{ $activity['no'] ?? '' }}">
                     <div class="no">{{ str_pad((string) ($activity['no'] ?? ''), 2, '0', STR_PAD_LEFT) }} · <span data-sanskar="{{ $activity['sanskar'] ?? '' }}">{{ $activity['sanskar'] ?? '' }}</span></div>
                     <div class="title-row">
-                        <h3>{{ $activity['title'] ?? '' }}</h3>
+                        <h3 data-copy-activity-title="{{ $activityIndex }}">{{ $activity['title'] ?? '' }}</h3>
                         <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
                     </div>
                     <div class="reveal-body">
                     @if(!empty($activity['objective']))
-                        <p class="meta">{!! $em((string) $activity['objective']) !!}</p>
+                        <p class="meta" data-copy-activity-objective="{{ $activityIndex }}">{!! $em((string) $activity['objective']) !!}</p>
                     @endif
-                    @foreach(($activity['blocks'] ?? []) as $block)
-                        <h4>{{ $block['label'] ?? '' }}</h4>
-                        <ul class="point-list">
+                    @foreach(($activity['blocks'] ?? []) as $blockIndex => $block)
+                        <h4 data-copy-activity-label="{{ $activityIndex }}-{{ $blockIndex }}">{{ $block['label'] ?? '' }}</h4>
+                        <ul class="point-list" data-copy-activity-items="{{ $activityIndex }}-{{ $blockIndex }}">
                             @foreach(($block['items'] ?? []) as $item)
                                 <li>{!! $em((string) $item) !!}</li>
                             @endforeach
@@ -330,7 +348,7 @@
                     @endforeach
                     @if(!empty($activity['memory']))
                         <h4 data-i18n="memory">Memory</h4>
-                        <div>{!! $em((string) $activity['memory']) !!}</div>
+                        <div data-copy-activity-memory="{{ $activityIndex }}">{!! $em((string) $activity['memory']) !!}</div>
                     @endif
                     @if(!empty($activity['budget']))
                         <h4 data-i18n="budget">Budget</h4>
@@ -338,7 +356,7 @@
                     @endif
                     @if(!empty($activity['certificate']))
                         <h4 data-i18n="certificate">Certificate</h4>
-                        <div>Yes</div>
+                        <div data-copy-activity-certificate="{{ $activityIndex }}">Yes</div>
                     @endif
                     </div>
                 </article>
@@ -354,13 +372,15 @@
         </div>
         <div class="reveal-body">
         <div class="invite" id="inviteBox">
-            <p>{{ $invitation['greeting'] ?? '' }}</p>
-            <p>{{ $invitation['welcome'] ?? '' }}</p>
-            <p>{{ $invitation['invite'] ?? '' }}</p>
-            <p>{{ $invitation['place'] ?? '' }}<br>{{ $invitation['date'] ?? '' }}<br>{{ $invitation['time'] ?? '' }}</p>
-            <p>{{ $invitation['benefit'] ?? '' }}</p>
-            <p>{{ $invitation['close'] ?? '' }}</p>
-            <p>{{ $invitation['signoff'] ?? '' }}</p>
+            <p data-copy-invite="greeting">{{ $invitation['greeting'] ?? '' }}</p>
+            <p data-copy-invite="welcome">{{ $invitation['welcome'] ?? '' }}</p>
+            <p data-copy-invite="invite">{{ $invitation['invite'] ?? '' }}</p>
+            <p data-copy-invite="place">{{ $invitation['place'] ?? '' }}</p>
+            <p data-copy-invite="date">{{ $invitation['date'] ?? '' }}</p>
+            <p data-copy-invite="time">{{ $invitation['time'] ?? '' }}</p>
+            <p data-copy-invite="benefit">{{ $invitation['benefit'] ?? '' }}</p>
+            <p data-copy-invite="close">{{ $invitation['close'] ?? '' }}</p>
+            <p data-copy-invite="signoff">{{ $invitation['signoff'] ?? '' }}</p>
         </div>
         </div>
     </section>
@@ -368,7 +388,7 @@
     <section class="formula">
         <small data-i18n="formulaKicker">Final Relationship Formula</small>
         <strong data-i18n="formulaText">{{ $plan['formula'] ?? '16 Activities → 16 Experiences → 16 Memories → Lifetime Customer' }}</strong>
-        <p style="margin:0;opacity:.95;" id="closingText">{!! $em((string) ($plan['closing'] ?? '')) !!}</p>
+        <p style="margin:0;opacity:.95;" id="closingText" data-copy-text="closing">{!! $em((string) ($plan['closing'] ?? '')) !!}</p>
     </section>
 
     <div class="footer" data-i18n="footer">{{ $biz }} — 16 Sanskar Customer Relationship Plan · {{ $generatedAt->format('d M Y H:i') }}</div>
@@ -388,6 +408,62 @@
         document.querySelectorAll('[data-sanskar]').forEach(function (el) {
             const key = el.getAttribute('data-sanskar');
             if (key && sanskars[key]) el.textContent = sanskars[key];
+        });
+        applyCopy(pack.copy || {});
+    }
+    function applyCopy(copy) {
+        const set = function (key, value) {
+            document.querySelectorAll('[data-copy-text="' + key + '"]').forEach(function (el) {
+                if (value) el.textContent = value;
+            });
+        };
+        set('business_type', copy.business_type);
+        set('model', copy.model);
+        set('annual_goal', copy.annual_goal);
+        set('closing', copy.closing);
+        const fillList = function (selector, items) {
+            const el = document.querySelector(selector);
+            if (!el || !Array.isArray(items) || items.length === 0) return;
+            el.innerHTML = items.map(function (item) {
+                return '<li>' + String(item).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>';
+            }).join('');
+        };
+        fillList('[data-copy-intro]', copy.intro_points);
+        fillList('[data-copy-products]', copy.product_points);
+        (copy.customers || []).forEach(function (name, index) {
+            document.querySelectorAll('[data-copy-customer="' + index + '"]').forEach(function (el) {
+                el.textContent = name;
+            });
+        });
+        (copy.calendar || []).forEach(function (row, index) {
+            const el = document.querySelector('[data-copy-calendar="' + index + '"]');
+            if (el && row.activity) el.textContent = row.activity;
+        });
+        (copy.activities || []).forEach(function (activity, index) {
+            const title = document.querySelector('[data-copy-activity-title="' + index + '"]');
+            if (title && activity.title) title.textContent = activity.title;
+            const objective = document.querySelector('[data-copy-activity-objective="' + index + '"]');
+            if (objective && activity.objective) objective.textContent = activity.objective;
+            const memory = document.querySelector('[data-copy-activity-memory="' + index + '"]');
+            if (memory && activity.memory) memory.textContent = activity.memory;
+            const cert = document.querySelector('[data-copy-activity-certificate="' + index + '"]');
+            if (cert && activity.certificate) cert.textContent = activity.certificate;
+            (activity.blocks || []).forEach(function (block, blockIndex) {
+                const label = document.querySelector('[data-copy-activity-label="' + index + '-' + blockIndex + '"]');
+                if (label && block.label) label.textContent = block.label;
+                const list = document.querySelector('[data-copy-activity-items="' + index + '-' + blockIndex + '"]');
+                if (list && Array.isArray(block.items)) {
+                    list.innerHTML = block.items.map(function (item) {
+                        return '<li>' + String(item).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</li>';
+                    }).join('');
+                }
+            });
+        });
+        const invite = copy.invitation || {};
+        Object.keys(invite).forEach(function (key) {
+            document.querySelectorAll('[data-copy-invite="' + key + '"]').forEach(function (el) {
+                el.textContent = invite[key];
+            });
         });
     }
     window.changeLanguage = function (language, button) {

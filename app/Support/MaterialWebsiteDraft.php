@@ -85,7 +85,7 @@ class MaterialWebsiteDraft
         $seo = self::seo($context);
         $journey = self::journey($context, $sections);
 
-        return [
+        $out = [
             'business_name' => $biz,
             'member_name' => $member,
             'intro_points' => MaterialCopyPoints::from($intro),
@@ -103,8 +103,10 @@ class MaterialWebsiteDraft
                 ['code' => 'add', 'label' => 'Add Information', 'icon' => '📌'],
                 ['code' => 'publish', 'label' => 'Publish', 'icon' => '🚀'],
             ],
-            'languages' => MaterialWebsiteI18n::packs($biz),
         ];
+        $out['languages'] = MaterialWebsiteI18n::packs($biz, $out);
+
+        return $out;
     }
 
     /**
@@ -149,6 +151,8 @@ class MaterialWebsiteDraft
             'biz' => $local['business_name'] ?? '',
             'facts' => [],
         ]);
+        $biz = (string) ($local['business_name'] ?? '');
+        $local['languages'] = MaterialWebsiteI18n::packs($biz, $local);
 
         return $local;
     }

@@ -5,16 +5,27 @@ namespace App\Support;
 class MaterialSanskarI18n
 {
     /**
+     * @param  array<string, mixed>  $plan
      * @return array<string, array<string, mixed>>
      */
-    public static function packs(string $businessName): array
+    public static function packs(string $businessName, array $plan = []): array
     {
-        return [
+        $packs = [
             'en' => self::en($businessName),
             'gu' => self::gu($businessName),
             'hi' => self::hi($businessName),
             'mr' => self::mr($businessName),
         ];
+
+        if ($plan !== []) {
+            foreach ($packs as $lang => $pack) {
+                $packs[$lang]['copy'] = MaterialSanskarCopy::forLanguage($plan, $lang);
+            }
+        }
+
+        $packs['mr'] = MaterialIndicScript::marathiPack($packs['mr']);
+
+        return $packs;
     }
 
     /**
@@ -26,6 +37,7 @@ class MaterialSanskarI18n
             'ui' => [
                 'kicker' => '16 Sanskar Calendar',
                 'heroKicker' => 'Customer 16 Sanskar Relationship Plan',
+                'topMeta' => 'Customer Relationship Plan',
                 'heroLine' => '16 meaningful experiences a year.',
                 'navIntro' => 'Introduction',
                 'navCalendar' => 'Yearly Calendar',
@@ -64,9 +76,10 @@ class MaterialSanskarI18n
             'ui' => [
                 'kicker' => '16 સંસ્કાર કેલેન્ડર',
                 'heroKicker' => 'કસ્ટમર 16 સંસ્કાર રિલેશનશિપ પ્લાન',
+                'topMeta' => 'કસ્ટમર રિલેશનશિપ પ્લાન',
                 'heroLine' => 'વર્ષમાં 16 અર્થપૂર્ણ અનુભવ.',
                 'navIntro' => 'ઇન્ટ્રોડક્શન',
-                'navCalendar' => 'વાર્ષિક કેલેન્ડર',
+                'navCalendar' => 'એન્યુઅલ કેલેન્ડર',
                 'navActivities' => '16 એક્ટિવિટી',
                 'navInvite' => 'આમંત્રણ',
                 'snapshotTitle' => 'બિઝનેસ સ્નેપશોટ',
@@ -75,8 +88,8 @@ class MaterialSanskarI18n
                 'labelIntroduction' => 'બિઝનેસ ઇન્ટ્રોડક્શન',
                 'labelProducts' => 'મેઈન પ્રોડક્ટ્સ / સર્વિસીસ',
                 'labelCustomers' => 'ટાર્ગેટ કસ્ટમર્સ',
-                'labelGoal' => 'વાર્ષિક ગોલ',
-                'calendarTitle' => 'વાર્ષિક 16 સંસ્કાર કેલેન્ડર',
+                'labelGoal' => 'એન્યુઅલ ગોલ',
+                'calendarTitle' => 'એન્યુઅલ 16 સંસ્કાર કેલેન્ડર',
                 'thNo' => 'ક્રમ',
                 'thSanskar' => 'સંસ્કાર',
                 'thActivity' => 'એક્ટિવિટી',
@@ -102,9 +115,10 @@ class MaterialSanskarI18n
             'ui' => [
                 'kicker' => '16 संस्कार कैलेंडर',
                 'heroKicker' => 'कस्टमर 16 संस्कार रिलेशनशिप प्लान',
+                'topMeta' => 'कस्टमर रिलेशनशिप प्लान',
                 'heroLine' => 'साल में 16 अर्थपूर्ण अनुभव.',
                 'navIntro' => 'इंट्रोडक्शन',
-                'navCalendar' => 'वार्षिक कैलेंडर',
+                'navCalendar' => 'एनुअल कैलेंडर',
                 'navActivities' => '16 एक्टिविटी',
                 'navInvite' => 'निमंत्रण',
                 'snapshotTitle' => 'बिज़नेस स्नैपशॉट',
@@ -113,8 +127,8 @@ class MaterialSanskarI18n
                 'labelIntroduction' => 'बिज़नेस इंट्रोडक्शन',
                 'labelProducts' => 'मेन प्रॉडक्ट्स / सर्विसेज',
                 'labelCustomers' => 'टारगेट कस्टमर्स',
-                'labelGoal' => 'वार्षिक गोल',
-                'calendarTitle' => 'वार्षिक 16 संस्कार कैलेंडर',
+                'labelGoal' => 'एनुअल गोल',
+                'calendarTitle' => 'एनुअल 16 संस्कार कैलेंडर',
                 'thNo' => 'क्रमांक',
                 'thSanskar' => 'संस्कार',
                 'thActivity' => 'एक्टिविटी',
@@ -140,9 +154,10 @@ class MaterialSanskarI18n
             'ui' => [
                 'kicker' => '16 संस्कार कॅलेंडर',
                 'heroKicker' => 'कस्टमर 16 संस्कार रिलेशनशिप प्लान',
+                'topMeta' => 'कस्टमर रिलेशनशिप प्लान',
                 'heroLine' => 'वर्षात 16 अर्थपूर्ण अनुभव.',
                 'navIntro' => 'इंट्रोडक्शन',
-                'navCalendar' => 'वार्षिक कॅलेंडर',
+                'navCalendar' => 'अॅन्युअल कॅलेंडर',
                 'navActivities' => '16 अॅक्टिव्हिटी',
                 'navInvite' => 'आमंत्रण',
                 'snapshotTitle' => 'बिझनेस स्नॅपशॉट',
@@ -151,8 +166,8 @@ class MaterialSanskarI18n
                 'labelIntroduction' => 'बिझनेस इंट्रोडक्शन',
                 'labelProducts' => 'मेन प्रॉडक्ट्स / सर्व्हिसेस',
                 'labelCustomers' => 'टार्गेट कस्टमर',
-                'labelGoal' => 'वार्षिक गोल',
-                'calendarTitle' => 'वार्षिक 16 संस्कार कॅलेंडर',
+                'labelGoal' => 'अॅन्युअल गोल',
+                'calendarTitle' => 'अॅन्युअल 16 संस्कार कॅलेंडर',
                 'thNo' => 'अ.क्र.',
                 'thSanskar' => 'संस्कार',
                 'thActivity' => 'अॅक्टिव्हिटी',

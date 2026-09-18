@@ -6,6 +6,8 @@ use App\Models\ManageSession;
 use App\Models\MemberProfile;
 use App\Models\SessionPrompt;
 use App\Models\User;
+use App\Support\MaterialSanskarI18n;
+use App\Support\MaterialWebsiteI18n;
 use Illuminate\Support\Carbon;
 
 class MaterialHtmlBuilder
@@ -34,7 +36,8 @@ class MaterialHtmlBuilder
             ? $prompt->filled($snapshot)
             : $this->fill((string) $prompt->body, $facts);
 
-        $view = match ((string) ($result['format'] ?? '')) {
+        $format = (string) ($result['format'] ?? '');
+        $view = match ($format) {
             'empire' => 'admin.material.document-empire',
             'reverse' => 'admin.material.document-reverse',
             'tagline' => 'admin.material.document-tagline',
@@ -42,6 +45,16 @@ class MaterialHtmlBuilder
             'sanskar' => 'admin.material.document-sanskar',
             default => 'admin.material.document',
         };
+
+        $languages = $result['languages'] ?? [];
+        $biz = (string) ($facts['business_name'] ?? '');
+        if ($format === 'sanskar' && is_array($result['sanskar'] ?? null) && $result['sanskar'] !== []) {
+            $plan = $result['sanskar'];
+            $languages = MaterialSanskarI18n::packs((string) ($plan['business_name'] ?? $biz), $plan);
+        } elseif ($format === 'website' && is_array($result['website'] ?? null) && $result['website'] !== []) {
+            $plan = $result['website'];
+            $languages = MaterialWebsiteI18n::packs((string) ($plan['business_name'] ?? $biz), $plan);
+        }
 
         return view($view, [
             'session' => $session,
@@ -54,7 +67,7 @@ class MaterialHtmlBuilder
             'journey' => $result['journey'] ?? [],
             'timeline' => $result['timeline'] ?? [],
             'final' => $result['final'] ?? [],
-            'languages' => $result['languages'] ?? [],
+            'languages' => $languages,
             'source' => $result['source'] ?? 'local',
             'reverse' => $result['reverse'] ?? [],
             'tagline' => $result['tagline'] ?? [],

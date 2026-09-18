@@ -48,5 +48,7 @@ class DatabaseSeeder extends Seeder
                 'is_active' => true,
             ]
         );
+
+        $this->call(BusinessPlaylistSeeder::class);
     }
 }

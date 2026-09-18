@@ -819,7 +819,7 @@ class MaterialModuleTest extends TestCase
         $this->assertCount(32, $payload['website']['sections'] ?? []);
         $this->assertStringContainsString('32 Gun — Complete Business Website Draft', $html);
         $this->assertStringContainsString('family=Poppins', $html);
-        $this->assertStringContainsString('font-family: Poppins', $html);
+        $this->assertStringContainsString('--font-ui: Poppins', $html);
         $this->assertStringNotContainsString('Plus Jakarta Sans', $html);
         $this->assertStringNotContainsString('Fraunces', $html);
         $this->assertStringContainsString('Cadworld Infoways', $html);
@@ -836,6 +836,10 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('मराठी', $html);
         $this->assertStringContainsString('languagePacks', $html);
         $this->assertSame('હીરો બેનર', $payload['languages']['gu']['sections']['hero'] ?? null);
+        $this->assertSame('હવે પૂછો', $payload['languages']['gu']['copy']['cta'] ?? null);
+        $this->assertStringContainsString('ફોટો', (string) ($payload['languages']['gu']['copy']['sections']['hero'][5]['text'] ?? ''));
+        $this->assertStringContainsString('data-copy-text="usp"', $html);
+        $this->assertStringContainsString('data-copy-section="hero"', $html);
         $this->assertStringContainsString('class="eye-btn"', $html);
         $this->assertStringContainsString('class="reveal-body"', $html);
         $this->assertStringContainsString('aria-expanded="false"', $html);
@@ -932,7 +936,7 @@ class MaterialModuleTest extends TestCase
         $this->assertCount(16, $payload['sanskar']['activities'] ?? []);
         $this->assertStringContainsString('16 Sanskar Calendar', $html);
         $this->assertStringContainsString('family=Poppins', $html);
-        $this->assertStringContainsString('font-family: Poppins', $html);
+        $this->assertStringContainsString('--font-ui: Poppins', $html);
         $this->assertStringNotContainsString('Plus Jakarta Sans', $html);
         $this->assertStringNotContainsString('Fraunces', $html);
         $this->assertStringContainsString('Cadworld Infoways', $html);

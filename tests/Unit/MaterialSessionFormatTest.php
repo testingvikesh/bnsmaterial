@@ -161,5 +161,10 @@ class MaterialSessionFormatTest extends TestCase
         $this->assertSame('હીરો બેનર', $plan['languages']['gu']['sections']['hero']);
         $this->assertSame('हीरो बैनर', $plan['languages']['hi']['sections']['hero']);
         $this->assertSame('हीरो बॅनर', $plan['languages']['mr']['sections']['hero']);
+        $this->assertArrayHasKey('copy', $plan['languages']['gu']);
+        $this->assertStringContainsString('ફોટો', (string) ($plan['languages']['gu']['copy']['sections']['hero'][5]['text'] ?? ''));
+        $this->assertStringContainsString('फ़ोटो', (string) ($plan['languages']['hi']['copy']['sections']['hero'][5]['text'] ?? ''));
+        $this->assertStringContainsString('फोटो', (string) ($plan['languages']['mr']['copy']['sections']['hero'][5]['text'] ?? ''));
+        $this->assertSame('હવે પૂછો', $plan['languages']['gu']['copy']['cta']);
     }
 }

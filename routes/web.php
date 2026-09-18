@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\PlaylistController;
+use App\Http\Controllers\Admin\PlaylistVideoController;
 use App\Http\Controllers\Admin\PromptController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SessionController;
@@ -55,6 +57,19 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::post('material/files/{materialFile}/track', [MaterialController::class, 'track'])->name('material.track');
         Route::get('material/files/{materialFile}/download', [MaterialController::class, 'download'])->name('material.download');
         Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
+
+        Route::get('playlist', [PlaylistController::class, 'index'])->name('playlist.index');
+        Route::get('playlist/categories/create', [PlaylistController::class, 'create'])->name('playlist.categories.create');
+        Route::post('playlist/categories', [PlaylistController::class, 'store'])->name('playlist.categories.store');
+        Route::get('playlist/categories/{playlistCategory}/edit', [PlaylistController::class, 'edit'])->name('playlist.categories.edit');
+        Route::put('playlist/categories/{playlistCategory}', [PlaylistController::class, 'update'])->name('playlist.categories.update');
+        Route::delete('playlist/categories/{playlistCategory}', [PlaylistController::class, 'destroy'])->name('playlist.categories.destroy');
+        Route::get('playlist/categories/{playlistCategory}', [PlaylistController::class, 'show'])->name('playlist.show');
+        Route::get('playlist/categories/{playlistCategory}/videos/create', [PlaylistVideoController::class, 'create'])->name('playlist.videos.create');
+        Route::post('playlist/categories/{playlistCategory}/videos', [PlaylistVideoController::class, 'store'])->name('playlist.videos.store');
+        Route::get('playlist/videos/{playlistVideo}/edit', [PlaylistVideoController::class, 'edit'])->name('playlist.videos.edit');
+        Route::put('playlist/videos/{playlistVideo}', [PlaylistVideoController::class, 'update'])->name('playlist.videos.update');
+        Route::delete('playlist/videos/{playlistVideo}', [PlaylistVideoController::class, 'destroy'])->name('playlist.videos.destroy');
 
         Route::middleware('role:admin')->group(function () {
             Route::resource('users', UserController::class)->except(['show']);

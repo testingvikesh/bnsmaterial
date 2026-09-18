@@ -73,8 +73,9 @@ class MaterialSanskarCalendar
             'invitation' => $pack['invitation'],
             'formula' => '16 Activities → 16 Experiences → 16 Memories → Lifetime Customer',
             'closing' => $pack['closing'],
-            'languages' => MaterialSanskarI18n::packs($biz),
         ];
+
+        $out['languages'] = MaterialSanskarI18n::packs($biz, $out);
 
         return $out;
     }

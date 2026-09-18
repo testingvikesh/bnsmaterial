@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ManageSession;
+use App\Models\PlaylistCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -55,9 +56,17 @@ class MemberController extends Controller
             ->orderBy('id')
             ->get();
 
+        $playlist = PlaylistCategory::query()
+            ->with(['videos' => fn ($query) => $query->orderBy('sort_order')->orderBy('id')])
+            ->withCount('videos')
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
         return view('admin.members.show', [
             'member' => $user,
             'sessions' => $sessions,
+            'playlist' => $playlist,
         ]);
     }
 }

@@ -13,6 +13,7 @@ use App\Support\MaterialSanskarCalendar;
 use App\Support\MaterialSessionFormat;
 use App\Support\MaterialTaglineMasterclass;
 use App\Support\MaterialWebsiteDraft;
+use App\Support\MaterialWebsiteI18n;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -323,6 +324,7 @@ class MaterialIdeaGenerator
         $draft = $api !== []
             ? MaterialWebsiteDraft::merge($local, $api)
             : $local;
+        $draft['languages'] = MaterialWebsiteI18n::packs($businessName, $draft);
 
         return [
             'source' => $source,

@@ -45,6 +45,9 @@
             <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                 <i class="bi bi-graph-up"></i> Reporting
             </a>
+            <a href="{{ route('admin.playlist.index') }}" class="nav-link {{ request()->routeIs('admin.playlist.*') ? 'active' : '' }}">
+                <i class="bi bi-collection-play"></i> Business Playlist
+            </a>
             @if($authUser->isAdmin())
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                     <i class="bi bi-person-gear"></i> Users

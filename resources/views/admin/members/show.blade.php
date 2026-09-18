@@ -57,4 +57,50 @@
         </div>
     @endforelse
 </div>
+
+<h5 class="session-box-heading mt-4">Business Playlist</h5>
+@forelse($playlist as $category)
+    <section class="playlist-member-block">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <div>
+                <h3 class="mb-1">{{ $category->name }}</h3>
+                <p class="mb-0 text-muted">{{ $category->details ?: $category->videos_count.' video'.($category->videos_count === 1 ? '' : 's') }}</p>
+            </div>
+            <a href="{{ route('admin.playlist.show', $category) }}" class="btn btn-soft btn-sm">Open category</a>
+        </div>
+        @if($category->videos->isEmpty())
+            <div class="card-panel mb-3">
+                <div class="card-body">
+                    <div class="empty-state">No videos in this category yet.</div>
+                </div>
+            </div>
+        @else
+            <div class="playlist-video-grid mb-4">
+                @foreach($category->videos as $video)
+                    <article class="playlist-video-card">
+                        <a href="{{ $video->watchUrl() }}" class="playlist-thumb {{ $video->canEmbed() ? '' : 'playlist-thumb-channel' }}" target="_blank" rel="noopener">
+                            @if($video->thumbnailUrl())
+                                <img src="{{ $video->thumbnailUrl() }}" alt="{{ $video->title }}">
+                            @endif
+                            <span class="playlist-play"><i class="bi bi-play-fill"></i></span>
+                        </a>
+                        <div class="playlist-video-body">
+                            <span class="badge-pill badge-staff mb-2">{{ $video->content_type }}</span>
+                            <h3>{{ $video->title }}</h3>
+                            <a href="{{ $video->watchUrl() }}" class="btn btn-soft btn-sm" target="_blank" rel="noopener">
+                                <i class="bi bi-youtube"></i> YouTube
+                            </a>
+                        </div>
+                    </article>
+                @endforeach
+            </div>
+        @endif
+    </section>
+@empty
+    <div class="card-panel">
+        <div class="card-body">
+            <div class="empty-state">No Business Playlist categories yet. Add them from Business Playlist.</div>
+        </div>
+    </div>
+@endforelse
 @endsection

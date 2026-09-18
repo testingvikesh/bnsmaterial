@@ -39,6 +39,9 @@ class MaterialSanskarCalendarTest extends TestCase
         $this->assertSame('પરિચય', $plan['languages']['gu']['sanskars']['Parichay']);
         $this->assertSame('परिचय', $plan['languages']['hi']['sanskars']['Parichay']);
         $this->assertSame('परिचय', $plan['languages']['mr']['sanskars']['Parichay']);
+        $this->assertSame('કસ્ટમર કનેક્ટ મીટ', $plan['languages']['gu']['copy']['activities'][0]['title'] ?? null);
+        $this->assertSame('Dear Customer,', $plan['languages']['en']['copy']['invitation']['greeting'] ?? null);
+        $this->assertStringContainsString('हार्दिक स्वागत', (string) ($plan['languages']['hi']['copy']['invitation']['welcome'] ?? ''));
     }
 
     public function test_jewellery_member_does_not_get_electrical_workshop(): void
@@ -53,6 +56,8 @@ class MaterialSanskarCalendarTest extends TestCase
         $this->assertSame('jewellery', $plan['family']);
         $this->assertCount(16, $plan['activities']);
         $this->assertSame('Design-Led Collection Workshop', $plan['activities'][2]['title']);
+        $this->assertSame('डिझाइन-लेड कलेक्शन वर्कशॉप', $plan['languages']['mr']['copy']['activities'][2]['title'] ?? null);
+        $this->assertSame('क्लायंट ॲप्रिसिएशन डे', $plan['languages']['mr']['copy']['activities'][6]['title'] ?? null);
         $this->assertNotSame('ABB Switchgear Workshop', $plan['activities'][2]['title']);
         $this->assertContains('Personal Clients', $plan['target_customers']);
         $this->assertNotContains('Panel Builders', $plan['target_customers']);

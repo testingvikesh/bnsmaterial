@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['business_name'] }} — 32 Gun Website Draft</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --navy: #071422;
@@ -19,12 +19,30 @@
             --inferred: #1d4ed8;
             --suggested: #6d28d9;
             --required: #be123c;
+            --font-ui: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            --font-gu: "Noto Sans Gujarati", "Nirmala UI", Poppins, Arial, sans-serif;
+            --font-mr: "Noto Sans Devanagari", "Nirmala UI", Mangal, Poppins, Arial, sans-serif;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
+        html[lang="gu"] { --font-ui: var(--font-gu); }
+        html[lang="hi"],
+        html[lang="mr"] { --font-ui: var(--font-mr); }
+        html[lang="gu"] h1, html[lang="gu"] h2, html[lang="gu"] h3,
+        html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3,
+        html[lang="mr"] h1, html[lang="mr"] h2, html[lang="mr"] h3 {
+            letter-spacing: 0;
+            font-kerning: normal;
+        }
+        html[lang="gu"] .kicker, html[lang="gu"] .label, html[lang="gu"] .no,
+        html[lang="hi"] .kicker, html[lang="hi"] .label, html[lang="hi"] .no,
+        html[lang="mr"] .kicker, html[lang="mr"] .label, html[lang="mr"] .no {
+            letter-spacing: 0;
+            text-transform: none;
+        }
         body {
             margin: 0;
-            font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            font-family: var(--font-ui);
             background:
                 radial-gradient(1200px 500px at 10% -10%, rgba(255,107,0,.18), transparent 55%),
                 radial-gradient(900px 420px at 100% 0%, rgba(255,184,0,.16), transparent 50%),
@@ -54,12 +72,12 @@
         .brand-mark small { display: block; color: #ffb800; letter-spacing: .12em; text-transform: uppercase; font-size: 10px; font-weight: 800; }
         .brand-mark strong { display: block; font-size: 18px; line-height: 1.2; }
         .top-meta { color: #cbd5e1; font-size: 13px; font-weight: 600; text-align: right; }
-        .language-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 8px; }
+        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; }
         .language-buttons button {
             border: 1px solid rgba(255,255,255,.28);
             background: rgba(255,255,255,.08);
-            color: #fff; padding: 8px 14px; border-radius: 999px;
-            cursor: pointer; font-weight: 700; font-size: 13px;
+            color: #fff; padding: 6px 10px; border-radius: 999px;
+            cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; flex-shrink: 0;
         }
         .language-buttons button:hover,
         .language-buttons button.active { background: #fff; color: #071422; }
@@ -92,7 +110,7 @@
         }
         .kicker { color: #ffb800; letter-spacing: .16em; text-transform: uppercase; font-size: 12px; font-weight: 800; }
         .hero-banner h1 {
-            font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            font-family: var(--font-ui);
             font-size: clamp(36px, 5vw, 64px);
             line-height: 1.05; margin: 10px 0 12px; max-width: 16ch;
         }
@@ -121,7 +139,7 @@
         .content { padding: 28px; }
         .section-block { margin: 0 0 22px; }
         .section-block h2, .panel h2 {
-            font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            font-family: var(--font-ui);
             font-size: 28px; margin: 0; color: var(--navy);
         }
         .title-row, .section-kicker {
@@ -192,7 +210,7 @@
             background: linear-gradient(135deg, #ff6b00, #c2410c); color: #fff;
             border-radius: 22px; padding: 28px;
         }
-        .cta-box h3 { font-family: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif; font-size: 32px; margin: 8px 0 10px; }
+        .cta-box h3 { font-family: var(--font-ui); font-size: 32px; margin: 8px 0 10px; }
         @media (max-width: 900px) {
             .hero-banner { padding: 36px 22px; }
             .content { padding: 16px; }
@@ -302,13 +320,13 @@
     <div class="site-frame">
         <div class="browser-dots"><span></span><span></span><span></span></div>
         <section class="hero-banner" id="sec-hero">
-            <div class="kicker">{{ $facts['category'] ?: 'Website preview' }}</div>
-            <h1>{{ $headline }}</h1>
-            <p class="hero-sub">{!! $em($tagline ?: $subheadline) !!}</p>
-            <a class="hero-cta" href="#sec-cta">{{ $cta }}</a>
+            <div class="kicker" data-copy-text="kicker">{{ $facts['category'] ?: 'Website preview' }}</div>
+            <h1 data-copy-text="headline">{{ $headline }}</h1>
+            <p class="hero-sub" data-copy-text="tagline">{!! $em($tagline ?: $subheadline) !!}</p>
+            <a class="hero-cta" href="#sec-cta" data-copy-text="cta">{{ $cta }}</a>
             <div class="hero-chips">
-                @if($subheadline)<span class="chip">{!! $em($subheadline) !!}</span>@endif
-                @if($usp)<span class="chip">{!! $em(\Illuminate\Support\Str::limit($usp, 88)) !!}</span>@endif
+                @if($subheadline)<span class="chip" data-copy-text="subheadline">{!! $em($subheadline) !!}</span>@endif
+                @if($usp)<span class="chip" data-copy-text="usp">{!! $em(\Illuminate\Support\Str::limit($usp, 88)) !!}</span>@endif
             </div>
         </section>
 
@@ -336,7 +354,7 @@
                             @php $item = is_array($item) ? $item : ['text' => $item, 'status' => 'inferred']; @endphp
                             <div class="tile {{ in_array($key, $wideKeys, true) ? 'wide' : '' }}">
                                 <span class="label" data-profile-label="{{ $key }}">{{ str_replace('_', ' ', $key) }}</span>
-                                {!! $copyHtml($item) !!}
+                                <div data-copy-profile="{{ $key }}">{!! $copyHtml($item) !!}</div>
                                 <div style="margin-top:10px"><span class="badge {{ $item['status'] ?? 'inferred' }}" data-status="{{ $item['status'] ?? 'inferred' }}">{{ $statusLabel[$item['status'] ?? 'inferred'] ?? $item['status'] }}</span></div>
                             </div>
                         @endforeach
@@ -370,12 +388,12 @@
                         <div class="panel">
                             <h2 data-section-heading="{{ $code }}">Hero Banner</h2>
                             <div class="block-grid">
-                                @foreach($blocks as $block)
+                                @foreach($blocks as $blockIndex => $block)
                                     <div class="tile block-card">
                                         @if(($block['label'] ?? '') !== '')
                                             <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>
                                         @endif
-                                        {!! $copyHtml($block) !!}
+                                        <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
                                         <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                     </div>
                                 @endforeach
@@ -383,27 +401,27 @@
                         </div>
                     @elseif($layout === 'steps')
                         <div class="steps">
-                            @foreach($blocks as $block)
+                            @foreach($blocks as $blockIndex => $block)
                                 <div class="step">
                                     <b data-block-label="{{ $block['label'] ?? '' }}">{{ $block['label'] ?? '' }}</b>
-                                    <div class="text">{!! $em($block['text'] ?? '') !!}</div>
+                                    <div class="text" data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $em($block['text'] ?? '') !!}</div>
                                 </div>
                             @endforeach
                         </div>
                     @elseif($layout === 'cta')
                         <div class="cta-box">
                             <span class="kicker" data-i18n="readyCta">Ready to talk</span>
-                            <h3>{{ $blocks[0]['text'] ?? $cta }}</h3>
-                            @foreach($blocks as $block)
-                                <p class="text" style="margin:0 0 8px">@if($block['label'] ?? '')<strong data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</strong>: @endif{!! $em($block['text'] ?? '') !!}</p>
+                            <h3 data-copy-text="cta">{{ $blocks[0]['text'] ?? $cta }}</h3>
+                            @foreach($blocks as $blockIndex => $block)
+                                <p class="text" style="margin:0 0 8px" data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">@if($block['label'] ?? '')<strong data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</strong>: @endif{!! $em($block['text'] ?? '') !!}</p>
                             @endforeach
                         </div>
                     @elseif($layout === 'contact')
                         <div class="contact-split">
-                            @foreach($blocks as $block)
+                            @foreach($blocks as $blockIndex => $block)
                                 <div class="tile block-card">
                                     @if(($block['label'] ?? '') !== '')                                        <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>@endif
-                                        {!! $copyHtml($block) !!}
+                                        <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
                                     <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                 </div>
                             @endforeach
@@ -412,12 +430,12 @@
                         <div class="panel {{ $layout }}">
                             <h2 data-section-heading="{{ $code }}">{{ $section['title'] }}</h2>
                             <div class="{{ $layout === 'faq' ? 'faq' : 'block-grid' }}">
-                                @foreach($blocks as $block)
+                                @foreach($blocks as $blockIndex => $block)
                                     <div class="tile block-card">
                                         @if(($block['label'] ?? '') !== '')
                                             <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>
                                         @endif
-                                        {!! $copyHtml($block) !!}
+                                        <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
                                         <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                     </div>
                                 @endforeach
@@ -440,7 +458,7 @@
                         @foreach($seo as $key => $value)
                             <div class="tile">
                                 <span class="label" data-block-label="{{ str_replace('_', ' ', $key) }}" data-seo-key="{{ $key }}">{{ str_replace('_', ' ', $key) }}</span>
-                                <div class="text">{!! $em((string) $value) !!}</div>
+                                <div class="text" data-copy-seo="{{ $key }}">{!! $em((string) $value) !!}</div>
                             </div>
                         @endforeach
                     </div>
@@ -457,9 +475,9 @@
                 <div class="panel">
                     <span class="no" data-i18n="journeyKicker">Audit</span>
                     <ol class="journey">
-                        @foreach($journey as $item)
+                        @foreach($journey as $journeyIndex => $item)
                             <li>
-                                <div><strong>{{ $item['question'] }}</strong><div class="text">{!! $em($item['answer'] ?? '') !!}</div></div>
+                                <div><strong data-copy-journey-q="{{ $journeyIndex }}">{{ $item['question'] }}</strong><div class="text" data-copy-journey-a="{{ $journeyIndex }}">{!! $em($item['answer'] ?? '') !!}</div></div>
                                 <span class="badge {{ $item['status'] }}" data-status="{{ $item['status'] }}">{{ $statusLabel[$item['status']] ?? $item['status'] }}</span>
                             </li>
                         @endforeach
@@ -477,14 +495,14 @@
                 <div class="panel">
                     <span class="no" data-i18n="reportKicker">Readiness</span>
                     <div class="report">
-                        <div class="tile"><span class="label" data-i18n="reportBusiness">Business Profile</span><strong>{{ $report['business_profile'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportContent">Content</span><strong>{{ $report['content'] ?? '0/32 Sections' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportUsp">USP</span><strong>{{ $report['usp'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportProduct">Product</span><strong>{{ $report['product'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportTrust">Trust</span><strong>{{ $report['trust'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportSeo">SEO</span><strong>{{ $report['seo'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportContact">Contact</span><strong>{{ $report['contact'] ?? 'Pending' }}</strong></div>
-                        <div class="tile"><span class="label" data-i18n="reportOverall">Overall Readiness</span><strong>{{ $report['overall'] ?? '0%' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportBusiness">Business Profile</span><strong data-copy-report="business_profile">{{ $report['business_profile'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportContent">Content</span><strong data-copy-report="content">{{ $report['content'] ?? '0/32 Sections' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportUsp">USP</span><strong data-copy-report="usp">{{ $report['usp'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportProduct">Product</span><strong data-copy-report="product">{{ $report['product'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportTrust">Trust</span><strong data-copy-report="trust">{{ $report['trust'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportSeo">SEO</span><strong data-copy-report="seo">{{ $report['seo'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportContact">Contact</span><strong data-copy-report="contact">{{ $report['contact'] ?? 'Pending' }}</strong></div>
+                        <div class="tile"><span class="label" data-i18n="reportOverall">Overall Readiness</span><strong data-copy-report="overall">{{ $report['overall'] ?? '0%' }}</strong></div>
                     </div>
                 </div>
                 </div>
@@ -532,6 +550,89 @@
         document.querySelectorAll('[data-block-label]').forEach(function (el) {
             const key = el.getAttribute('data-block-label');
             if (key && blocks[key]) el.textContent = blocks[key];
+        });
+        applyCopy(pack.copy || {});
+    }
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+    function renderItem(el, item, asText) {
+        if (!el || !item) return;
+        const text = item.text || (typeof item === 'string' ? item : '');
+        const points = item.points || [];
+        if (asText) {
+            el.textContent = text;
+            return;
+        }
+        if (el.tagName === 'P') {
+            const label = el.querySelector('[data-block-label]');
+            const prefix = label ? label.outerHTML + ': ' : '';
+            el.innerHTML = prefix + escapeHtml(text).replace(/\n/g, '<br>');
+            return;
+        }
+        if (points.length > 1) {
+            el.innerHTML = '<ul class="point-list">' + points.map(function (point) {
+                return '<li>' + escapeHtml(point) + '</li>';
+            }).join('') + '</ul>';
+            return;
+        }
+        el.innerHTML = '<div class="text">' + escapeHtml(text).replace(/\n/g, '<br>') + '</div>';
+    }
+    function applyCopy(copy) {
+        const set = function (key, value) {
+            document.querySelectorAll('[data-copy-text="' + key + '"]').forEach(function (el) {
+                if (value) el.textContent = value;
+            });
+        };
+        set('kicker', copy.kicker);
+        set('headline', copy.headline);
+        set('tagline', copy.tagline);
+        set('cta', copy.cta);
+        set('subheadline', copy.subheadline);
+        set('usp', copy.usp);
+        document.querySelectorAll('[data-copy-profile]').forEach(function (el) {
+            const key = el.getAttribute('data-copy-profile');
+            renderItem(el, (copy.profile || {})[key]);
+        });
+        document.querySelectorAll('[data-copy-section]').forEach(function (el) {
+            const code = el.getAttribute('data-copy-section');
+            const index = parseInt(el.getAttribute('data-copy-index') || '0', 10);
+            const item = ((copy.sections || {})[code] || [])[index];
+            if (!item) return;
+            if (el.tagName === 'P') {
+                const label = el.querySelector('[data-block-label]');
+                el.innerHTML = (label ? label.outerHTML + ': ' : '') + escapeHtml(item.text || '').replace(/\n/g, '<br>');
+                return;
+            }
+            if (el.classList.contains('text') && el.tagName === 'DIV') {
+                el.textContent = item.text || '';
+                return;
+            }
+            renderItem(el, item);
+        });
+        document.querySelectorAll('[data-copy-seo]').forEach(function (el) {
+            const key = el.getAttribute('data-copy-seo');
+            const value = (copy.seo || {})[key];
+            if (typeof value === 'string') el.textContent = value;
+        });
+        document.querySelectorAll('[data-copy-journey-q]').forEach(function (el) {
+            const index = parseInt(el.getAttribute('data-copy-journey-q') || '0', 10);
+            const item = (copy.journey || [])[index];
+            if (item && item.question) el.textContent = item.question;
+        });
+        document.querySelectorAll('[data-copy-journey-a]').forEach(function (el) {
+            const index = parseInt(el.getAttribute('data-copy-journey-a') || '0', 10);
+            const item = (copy.journey || [])[index];
+            if (item && item.answer) el.textContent = item.answer;
+        });
+        document.querySelectorAll('[data-copy-report]').forEach(function (el) {
+            const key = el.getAttribute('data-copy-report');
+            const value = (copy.report || {})[key];
+            if (typeof value === 'string') el.textContent = value;
         });
     }
     window.changeLanguage = function (language, button) {
