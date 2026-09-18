@@ -38,6 +38,8 @@ class MaterialHtmlBuilder
             'empire' => 'admin.material.document-empire',
             'reverse' => 'admin.material.document-reverse',
             'tagline' => 'admin.material.document-tagline',
+            'website' => 'admin.material.document-website',
+            'sanskar' => 'admin.material.document-sanskar',
             default => 'admin.material.document',
         };
 
@@ -56,6 +58,8 @@ class MaterialHtmlBuilder
             'source' => $result['source'] ?? 'local',
             'reverse' => $result['reverse'] ?? [],
             'tagline' => $result['tagline'] ?? [],
+            'website' => $result['website'] ?? [],
+            'sanskar' => $result['sanskar'] ?? [],
         ])->render();
     }
 
@@ -79,6 +83,15 @@ class MaterialHtmlBuilder
             'address' => (string) ($profile?->business_address ?: '—'),
             'intro' => (string) ($profile?->business_description ?: '—'),
             'products' => (string) ($profile?->main_products_services ?: '—'),
+            'services' => (string) ($profile?->main_services ?: '—'),
+            'business_type' => (string) ($profile?->business_type ?: '—'),
+            'city' => (string) ($profile?->city ?: $profile?->business_location ?: '—'),
+            'website' => (string) ($profile?->website_url ?: '—'),
+            'instagram' => (string) ($profile?->instagram ?: '—'),
+            'facebook' => (string) ($profile?->facebook ?: '—'),
+            'linkedin' => (string) ($profile?->linkedin ?: '—'),
+            'youtube' => (string) ($profile?->youtube ?: '—'),
+            'google_business' => (string) ($profile?->google_business ?: '—'),
             'session_name' => (string) $session->name,
             'session_details' => (string) ($session->details ?: '—'),
         ];

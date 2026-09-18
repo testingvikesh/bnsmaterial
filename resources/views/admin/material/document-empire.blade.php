@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['business_name'] }} - Business Empire Vision</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --navy: #0a1d37;
@@ -17,7 +17,7 @@
         }
         * { box-sizing: border-box; }
         body {
-            font-family: "Plus Jakarta Sans", "Noto Sans Gujarati", Arial, sans-serif;
+            font-family: Poppins, "Noto Sans Gujarati", Arial, sans-serif;
             background: #eef3f8;
             margin: 0;
             color: #0a1d37;

@@ -31,6 +31,23 @@ class MaterialCopyPointsTest extends TestCase
         $this->assertTrue(collect($points)->contains(fn ($point) => str_contains($point, 'Bespoke Fine Jewellery')));
         $this->assertTrue(collect($points)->contains(fn ($point) => str_contains($point, 'Design Consultancy')));
         $this->assertTrue(collect($points)->contains(fn ($point) => str_starts_with($point, 'For Jewellery Brands:')));
+        $this->assertFalse(collect($points)->contains(fn ($point) => preg_match('/^\d+[.)]?$/', $point)));
+    }
+
+    public function test_keeps_numbered_offer_with_description_as_one_point(): void
+    {
+        $products = 'For Personal Clients 1. Bespoke Fine Jewellery – Made to Order. Personalised jewellery designed around your story, occasion, preferences, and vision. From the initial concept to the final piece, every creation is developed exclusively for the client. 2. Design-Led Collections – Silver & Titanium. Thoughtfully conceptualised jewellery collections inspired by stories, emotions, nature, and contemporary design.';
+
+        $points = MaterialCopyPoints::from($products);
+
+        $this->assertSame('For Personal Clients', $points[0]);
+        $this->assertFalse(collect($points)->contains('1.'));
+        $this->assertFalse(collect($points)->contains('2.'));
+        $bespoke = collect($points)->first(fn ($point) => str_contains($point, 'Bespoke Fine Jewellery'));
+        $this->assertNotNull($bespoke);
+        $this->assertStringContainsString('Personalised jewellery', $bespoke);
+        $this->assertStringContainsString('initial concept', $bespoke);
+        $this->assertTrue(collect($points)->contains(fn ($point) => str_contains($point, 'Design-Led Collections') && str_contains($point, 'Thoughtfully conceptualised')));
     }
 
     public function test_keeps_short_single_line_as_one_point(): void

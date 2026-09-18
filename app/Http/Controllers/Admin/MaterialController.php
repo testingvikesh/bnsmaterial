@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ManageSession;
+use App\Models\MaterialEvent;
 use App\Models\MaterialFile;
 use App\Models\SessionPrompt;
 use App\Models\User;
@@ -317,9 +318,22 @@ class MaterialController extends Controller
 
     public function show(MaterialFile $materialFile): Response
     {
-        return response($this->htmlFor($materialFile), 200, [
+        $this->recordEvent($materialFile, MaterialEvent::VIEW);
+
+        return response($this->withTracker($this->htmlFor($materialFile), $materialFile), 200, [
             'Content-Type' => 'text/html; charset=UTF-8',
         ]);
+    }
+
+    public function track(Request $request, MaterialFile $materialFile): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'in:view,read'],
+        ]);
+
+        $this->recordEvent($materialFile, (string) $data['type']);
+
+        return response()->json(['ok' => true]);
     }
 
     public function download(MaterialFile $materialFile): StreamedResponse
@@ -381,14 +395,21 @@ class MaterialController extends Controller
 
         if (! $force && $existing instanceof MaterialFile && $existing->hasUsableCache()) {
             $result = $existing->cachedPayload() ?? [];
-            $result['source'] = 'cache';
+            $expected = MaterialSessionFormat::resolve($session, $prompt);
+            $cachedFormat = (string) ($result['format'] ?? '');
+            $formatMatches = $cachedFormat === $expected
+                || ($cachedFormat === '' && $expected === MaterialSessionFormat::ONE_TO_25);
 
-            return [
-                'result' => $result,
-                'file' => $existing,
-                'duration_ms' => (int) max(1, round((microtime(true) - $started) * 1000)),
-                'cached' => true,
-            ];
+            if ($formatMatches) {
+                $result['source'] = 'cache';
+
+                return [
+                    'result' => $result,
+                    'file' => $existing,
+                    'duration_ms' => (int) max(1, round((microtime(true) - $started) * 1000)),
+                    'cached' => true,
+                ];
+            }
         }
 
         $result = $generator->generate($session, $prompt, $user);
@@ -427,5 +448,30 @@ class MaterialController extends Controller
             'duration_ms' => $durationMs,
             'cached' => false,
         ];
+    }
+
+    private function recordEvent(MaterialFile $materialFile, string $type): void
+    {
+        MaterialEvent::query()->create([
+            'material_file_id' => $materialFile->id,
+            'user_id' => $materialFile->user_id,
+            'manage_session_id' => $materialFile->manage_session_id,
+            'viewer_id' => auth()->id(),
+            'type' => $type,
+            'ip' => request()->ip(),
+        ]);
+    }
+
+    private function withTracker(string $html, MaterialFile $materialFile): string
+    {
+        $trackUrl = route('admin.material.track', $materialFile);
+        $token = csrf_token();
+        $snippet = '<script>(function(){var sent=false;function ping(){if(sent)return;sent=true;try{fetch('.json_encode($trackUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE).',{method:"POST",headers:{"X-CSRF-TOKEN":'.json_encode($token).',"Accept":"application/json","Content-Type":"application/json","X-Requested-With":"XMLHttpRequest"},credentials:"same-origin",body:JSON.stringify({type:"read"})});}catch(e){}}setTimeout(ping,8000);window.addEventListener("scroll",function(){if((window.scrollY||0)>280)ping();},{passive:true});})();</script>';
+
+        if (str_contains($html, '</body>')) {
+            return str_replace('</body>', $snippet.'</body>', $html);
+        }
+
+        return $html.$snippet;
     }
 }

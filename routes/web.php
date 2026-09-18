@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\MaterialController;
 use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\Admin\PromptController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SessionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -51,7 +52,9 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('material/dashboard', [MaterialController::class, 'dashboard'])->name('material.dashboard');
         Route::post('material/generate', [MaterialController::class, 'generate'])->name('material.generate');
         Route::get('material/files/{materialFile}', [MaterialController::class, 'show'])->name('material.show');
+        Route::post('material/files/{materialFile}/track', [MaterialController::class, 'track'])->name('material.track');
         Route::get('material/files/{materialFile}/download', [MaterialController::class, 'download'])->name('material.download');
+        Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
         Route::middleware('role:admin')->group(function () {
             Route::resource('users', UserController::class)->except(['show']);

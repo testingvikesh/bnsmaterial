@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Support\MaterialEmpireVision;
 use App\Support\MaterialOneTo25;
 use App\Support\MaterialReverseManagement;
+use App\Support\MaterialSanskarCalendar;
 use App\Support\MaterialSessionFormat;
 use App\Support\MaterialTaglineMasterclass;
+use App\Support\MaterialWebsiteDraft;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -67,6 +69,14 @@ class MaterialIdeaGenerator
 
         if ($format === MaterialSessionFormat::TAGLINE) {
             return $this->generateTagline($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
+        }
+
+        if ($format === MaterialSessionFormat::WEBSITE) {
+            return $this->generateWebsite($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
+        }
+
+        if ($format === MaterialSessionFormat::SANSKAR) {
+            return $this->generateSanskar($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
         }
 
         $local = MaterialOneTo25::for([
@@ -256,6 +266,135 @@ class MaterialIdeaGenerator
             'snapshot' => $snapshot,
             'ideas' => [],
             'tagline' => $plan,
+            'languages' => $plan['languages'] ?? [],
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $facts
+     * @param  array<string, string>  $snapshot
+     * @return array<string, mixed>
+     */
+    private function generateWebsite(
+        ManageSession $session,
+        SessionPrompt $prompt,
+        User $user,
+        MemberProfile $profile,
+        array $facts,
+        string $businessName,
+        array $snapshot,
+        string $filledPrompt
+    ): array {
+        $websiteFacts = $facts + [
+            'member_name' => (string) $user->name,
+            'member_id' => (string) ($profile->member_id ?: ''),
+            'city' => (string) ($profile->city ?: $snapshot['city'] ?? ''),
+            'location' => (string) ($profile->business_location ?: $snapshot['businessLocation'] ?? ''),
+            'address' => (string) ($profile->business_address ?: $snapshot['businessAddress'] ?? ''),
+            'phone' => (string) ($snapshot['whatsapp'] ?? ''),
+            'services' => trim((string) ($profile->main_services ?: $facts['products'])),
+            'business_type' => trim((string) ($profile->business_type ?: '')),
+            'website' => trim((string) ($profile->website_url ?: '')),
+            'instagram' => trim((string) ($profile->instagram ?: '')),
+            'facebook' => trim((string) ($profile->facebook ?: '')),
+            'youtube' => trim((string) ($profile->youtube ?: '')),
+            'linkedin' => trim((string) ($profile->linkedin ?: '')),
+            'google_business' => trim((string) ($profile->google_business ?: '')),
+        ];
+
+        $local = MaterialWebsiteDraft::for($websiteFacts);
+        $source = 'local';
+        $api = [];
+
+        if ($this->apiEnabled() && $filledPrompt !== '') {
+            try {
+                $api = $this->viaOpenAiWebsite($filledPrompt);
+                $source = 'openai';
+            } catch (\Throwable $e) {
+                Log::warning('OpenAI website generate failed, using local engine.', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id,
+                    'session_id' => $session->id,
+                    'prompt_id' => $prompt->id,
+                ]);
+            }
+        }
+
+        $draft = $api !== []
+            ? MaterialWebsiteDraft::merge($local, $api)
+            : $local;
+
+        return [
+            'source' => $source,
+            'format' => MaterialSessionFormat::WEBSITE,
+            'prompt' => [
+                'id' => $prompt->id,
+                'title' => $prompt->title,
+                'body' => $filledPrompt !== '' ? $filledPrompt : null,
+            ],
+            'member' => [
+                'name' => (string) $user->name,
+                'member_id' => (string) ($profile->member_id ?: ''),
+                'business_name' => $businessName,
+            ],
+            'facts' => [
+                'category' => $facts['category'],
+                'intro' => $facts['intro'],
+                'products' => $facts['products'],
+            ],
+            'snapshot' => $snapshot,
+            'ideas' => [],
+            'website' => $draft,
+            'languages' => $draft['languages'] ?? [],
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $facts
+     * @param  array<string, string>  $snapshot
+     * @return array<string, mixed>
+     */
+    private function generateSanskar(
+        ManageSession $session,
+        SessionPrompt $prompt,
+        User $user,
+        MemberProfile $profile,
+        array $facts,
+        string $businessName,
+        array $snapshot,
+        string $filledPrompt
+    ): array {
+        $plan = MaterialSanskarCalendar::for([
+            'business_name' => $businessName,
+            'category' => $facts['category'],
+            'intro' => $facts['intro'],
+            'products' => $facts['products'],
+            'member_name' => (string) $user->name,
+            'city' => (string) ($profile->city ?: $snapshot['city'] ?? ''),
+            'location' => (string) ($profile->business_location ?: $snapshot['businessLocation'] ?? ''),
+        ]);
+
+        return [
+            'source' => 'local',
+            'format' => MaterialSessionFormat::SANSKAR,
+            'prompt' => [
+                'id' => $prompt->id,
+                'title' => $prompt->title,
+                'body' => $filledPrompt !== '' ? $filledPrompt : null,
+            ],
+            'member' => [
+                'name' => (string) $user->name,
+                'member_id' => (string) ($profile->member_id ?: ''),
+                'business_name' => $businessName,
+            ],
+            'facts' => [
+                'category' => $facts['category'],
+                'intro' => $facts['intro'],
+                'products' => $facts['products'],
+            ],
+            'snapshot' => $snapshot,
+            'ideas' => [],
+            'sanskar' => $plan,
             'languages' => $plan['languages'] ?? [],
         ];
     }
@@ -471,6 +610,121 @@ class MaterialIdeaGenerator
         }
 
         return $merged;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function viaOpenAiWebsite(string $userPrompt): array
+    {
+        $full = $this->openaiWebsiteOnce($userPrompt);
+        if (count($full['sections'] ?? []) >= 32) {
+            return $full;
+        }
+
+        $codes = array_keys(MaterialWebsiteDraft::titles());
+        $titles = array_values(MaterialWebsiteDraft::titles());
+        $merged = $full;
+        $sections = [];
+        foreach ([[0, 10], [11, 21], [22, 31]] as [$from, $to]) {
+            $sliceCodes = array_slice($codes, $from, ($to - $from) + 1);
+            $sliceTitles = array_slice($titles, $from, ($to - $from) + 1);
+            $lines = [];
+            foreach ($sliceCodes as $i => $code) {
+                $lines[] = ($from + $i + 1).'. '.$code.' — '.$sliceTitles[$i];
+            }
+            $extra = implode("\n", [
+                'Generate ONLY website sections '.($from + 1).' to '.($to + 1).'.',
+                'Required codes in this exact order:',
+                implode("\n", $lines),
+                'Return exactly '.count($sliceCodes).' sections.',
+                $from === 0 ? 'Also include seo.' : 'Do not include seo.',
+            ]);
+            $chunk = $this->openaiWebsiteOnce($userPrompt, $extra);
+            foreach ($chunk['sections'] as $section) {
+                $sections[] = $section;
+            }
+            if (($chunk['seo'] ?? []) !== []) {
+                $merged['seo'] = $chunk['seo'];
+            }
+        }
+        $merged['sections'] = array_slice($sections, 0, 32);
+        if (count($merged['sections']) < 32) {
+            throw new \RuntimeException('OpenAI returned too few website sections ('.count($merged['sections']).').');
+        }
+
+        return $merged;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function openaiWebsiteOnce(string $userPrompt, string $extra = ''): array
+    {
+        $json = $this->openaiChat([
+            ['role' => 'system', 'content' => $this->systemPrompt('website')],
+            ['role' => 'user', 'content' => trim($userPrompt."\n\n".$this->jsonInstruction('website')."\n\n".$extra)],
+        ]);
+
+        $content = (string) data_get($json, 'choices.0.message.content');
+        if (trim($content) === '') {
+            return ['sections' => [], 'seo' => []];
+        }
+
+        return $this->parseWebsiteJson($content);
+    }
+
+    /**
+     * @return array{sections: list<array<string, mixed>>, seo: array<string, mixed>}
+     */
+    public function parseWebsiteJson(string $content): array
+    {
+        $decoded = $this->decodeJson($content);
+        if (! is_array($decoded)) {
+            throw new \RuntimeException('Invalid JSON from OpenAI.');
+        }
+
+        $raw = $decoded['sections'] ?? $decoded['website_sections'] ?? [];
+        $sections = [];
+        $codes = array_keys(MaterialWebsiteDraft::titles());
+        if (is_array($raw)) {
+            foreach ($raw as $index => $section) {
+                if (! is_array($section)) {
+                    continue;
+                }
+                $code = strtolower(trim((string) ($section['code'] ?? $codes[$index] ?? '')));
+                $blocks = [];
+                $rawBlocks = $section['blocks'] ?? $section['items'] ?? [];
+                if (is_array($rawBlocks)) {
+                    foreach ($rawBlocks as $block) {
+                        if (is_string($block)) {
+                            $blocks[] = ['label' => '', 'text' => trim($block), 'status' => (string) ($section['status'] ?? 'inferred')];
+                            continue;
+                        }
+                        if (! is_array($block)) {
+                            continue;
+                        }
+                        $blocks[] = [
+                            'label' => trim((string) ($block['label'] ?? $block['title'] ?? '')),
+                            'text' => trim((string) ($block['text'] ?? $block['content'] ?? $block['value'] ?? '')),
+                            'status' => trim((string) ($block['status'] ?? $section['status'] ?? 'inferred')),
+                        ];
+                    }
+                }
+                $sections[] = [
+                    'no' => str_pad((string) (count($sections) + 1), 2, '0', STR_PAD_LEFT),
+                    'code' => $code !== '' ? $code : (string) ($codes[count($sections)] ?? 'section'),
+                    'title' => trim((string) ($section['title'] ?? $section['name'] ?? '')),
+                    'status' => trim((string) ($section['status'] ?? 'inferred')),
+                    'blocks' => $blocks,
+                ];
+            }
+        }
+
+        return [
+            'sections' => $sections,
+            'seo' => is_array($decoded['seo'] ?? null) ? $decoded['seo'] : [],
+        ];
     }
 
     /**
@@ -952,6 +1206,18 @@ class MaterialIdeaGenerator
             ]);
         }
 
+        if ($format === 'website') {
+            return implode("\n", [
+                'You are a senior Indian business website writer for BNS ERP.',
+                'Create a complete 32-section business website draft from Business Name + Category + Main Product only.',
+                'Do not ask questions. English only. Return ONLY valid JSON.',
+                'Use status verified | inferred | suggested | required on every block.',
+                'Never fabricate customers, reviews, awards, certifications, prices, revenue, employee names, founder history, or guarantees.',
+                'Where a fact is missing, write a useful placeholder and mark status required.',
+                'Navachar ideas must be labelled Potential Navachar Opportunity.',
+            ]);
+        }
+
         return implode("\n", [
             'You are a senior Indian business consultant.',
             'Follow the USER PROMPT exactly. It is the only instruction set.',
@@ -965,6 +1231,41 @@ class MaterialIdeaGenerator
 
     private function jsonInstruction(string $format = 'one_to_25'): string
     {
+        if ($format === 'website') {
+            return <<<'TXT'
+OUTPUT FORMAT — return ONLY valid JSON:
+{
+  "sections": [
+    {
+      "code": "hero",
+      "title": "Hero Banner",
+      "status": "inferred",
+      "blocks": [
+        {"label": "Headline", "text": "Business name", "status": "verified"},
+        {"label": "Tagline", "text": "Short tagline", "status": "inferred"}
+      ]
+    }
+  ],
+  "seo": {
+    "primary_keyword": "",
+    "secondary_keywords": "",
+    "local_keywords": "",
+    "seo_title": "",
+    "meta_description": "",
+    "h1": "",
+    "h2": "",
+    "faq_keywords": "",
+    "image_alt": "",
+    "url_slug": ""
+  }
+}
+Exactly 32 sections in this code order:
+hero, introduction, purpose, problem, solution, why, products, services, signature, pricing, process, navachar, quality, founder, team, story, portfolio, results, certifications, clients, testimonials, reviews, gallery, videos, knowledge, faq, offers, membership, experience, cta, digital, contact
+status must be one of: verified, inferred, suggested, required
+Never invent prices, reviews, awards, clients, certifications or employee names.
+TXT;
+        }
+
         if ($format === 'empire') {
             return <<<'TXT'
 OUTPUT FORMAT — return ONLY valid JSON:

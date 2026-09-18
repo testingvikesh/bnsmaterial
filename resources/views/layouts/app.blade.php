@@ -7,7 +7,7 @@
     <title>@yield('title', 'Dashboard') — {{ config('app.name') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/admin.css') }}?v={{ @filemtime(public_path('css/admin.css')) ?: time() }}" rel="stylesheet">
     @stack('styles')
 </head>
@@ -41,6 +41,9 @@
             </a>
             <a href="{{ route('admin.material.index') }}" class="nav-link {{ request()->routeIs('admin.material.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-code"></i> Material
+            </a>
+            <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                <i class="bi bi-graph-up"></i> Reporting
             </a>
             @if($authUser->isAdmin())
                 <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">

@@ -15,16 +15,56 @@ class MaterialSessionFormat
 
     public const TAGLINE = 'tagline';
 
+    public const WEBSITE = 'website';
+
+    public const SANSKAR = 'sanskar';
+
     public static function resolve(ManageSession $session, ?SessionPrompt $prompt = null): string
     {
-        $hay = strtolower(trim(
+        $nameHay = strtolower(trim(
             $session->name.' '.
             ($session->details ?? '').' '.
-            ($prompt?->title ?? '').' '.
-            ($prompt?->body ?? '')
+            ($prompt?->title ?? '')
         ));
+        $hay = trim($nameHay.' '.strtolower((string) ($prompt?->body ?? '')));
+
+        if (self::contains($nameHay, [
+            '16 sanskar',
+            '16 saskar',
+            '16 sanskaar',
+            'sixteen sanskar',
+            'sixteen saskar',
+            '16saskar',
+            '16sanskar',
+        ]) || self::contains($hay, [
+            '16 sanskar',
+            '16 saskar',
+            'customer 16 sanskar',
+            'customer relationship calendar',
+            'sanskar relationship',
+            'saskar relationship',
+        ])) {
+            return self::SANSKAR;
+        }
 
         if (self::contains($hay, [
+            '32 gun',
+            '32-gun',
+            '32gun',
+            '32 section',
+            '32-section',
+            '32 website',
+            'universal 32',
+            'complete business website',
+            'website draft',
+            'website master prompt',
+            'zero-question ai business website',
+            'business website master',
+        ])) {
+            return self::WEBSITE;
+        }
+
+        if (self::contains($nameHay, [
             'tagline',
             'tag line',
             'tagline masterclass',

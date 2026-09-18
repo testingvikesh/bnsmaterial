@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
 class MaterialFile extends Model
@@ -35,6 +36,11 @@ class MaterialFile extends Model
     public function prompt(): BelongsTo
     {
         return $this->belongsTo(SessionPrompt::class, 'session_prompt_id');
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(MaterialEvent::class);
     }
 
     public function downloadName(): string

@@ -50,6 +50,7 @@ class MaterialModuleTest extends TestCase
             ->assertSee('Cadworld Infoways')
             ->assertSee('Generate')
             ->assertSee('Generate selected')
+            ->assertSee('family=Poppins', false)
             ->assertSee('Not Generate')
             ->assertSee('name="user_ids[]"', false)
             ->assertSee('Time')
@@ -202,6 +203,8 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('Trading', $html);
         $this->assertStringNotContainsString('Session Prompt', $html);
         $this->assertStringContainsString('<!DOCTYPE html>', $html);
+        $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringContainsString('font-family: Poppins', $html);
 
         $this->actingAs($admin)
             ->get(route('admin.material.show', $file))
@@ -774,6 +777,189 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('<li>Gold &amp; Diamond Jewellery</li>', $html);
         $this->assertStringContainsString('function toPoints', $html);
         $this->assertStringNotContainsString('Create 15 taglines for ABC Jewellery', $html);
+    }
+
+    public function test_thirty_two_gun_session_generates_website_draft_not_tagline(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $session = ManageSession::factory()->create(['name' => '32 Gun', 'details' => '32 Gun']);
+        SessionPrompt::factory()->active()->create([
+            'manage_session_id' => $session->id,
+            'title' => '32 Gun Details',
+            'body' => "Complete Business Website Draft for {{businessName}}.\nHero Banner includes Headline, Subheadline, Tagline and USP.",
+        ]);
+        $member = User::factory()->create(['name' => 'Alice Student']);
+        MemberProfile::factory()->create([
+            'user_id' => $member->id,
+            'business_name' => 'Cadworld Infoways',
+            'business_category' => 'Trading',
+            'business_description' => 'Wires and cables trading business.',
+            'main_products_services' => 'Wires and cables',
+            'business_location' => 'Mumbai',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.material.generate'), [
+                'manage_session_id' => $session->id,
+                'user_id' => $member->id,
+            ])
+            ->assertRedirect();
+
+        $file = MaterialFile::query()->first();
+        $this->assertNotNull($file);
+        $jsonPath = preg_replace('/\.html$/', '.json', $file->file_path);
+        $this->assertTrue(Storage::disk('local')->exists($file->file_path));
+        $this->assertTrue(Storage::disk('local')->exists($jsonPath));
+        $html = Storage::disk('local')->get($file->file_path);
+        $payload = json_decode(Storage::disk('local')->get($jsonPath), true);
+
+        $this->assertSame('website', $payload['format'] ?? null);
+        $this->assertCount(32, $payload['website']['sections'] ?? []);
+        $this->assertStringContainsString('32 Gun — Complete Business Website Draft', $html);
+        $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringContainsString('font-family: Poppins', $html);
+        $this->assertStringNotContainsString('Plus Jakarta Sans', $html);
+        $this->assertStringNotContainsString('Fraunces', $html);
+        $this->assertStringContainsString('Cadworld Infoways', $html);
+        $this->assertStringContainsString('Hero Banner', $html);
+        $this->assertStringContainsString('Contact Us', $html);
+        $this->assertStringNotContainsString('BNS Tagline Masterclass', $html);
+        $this->assertStringNotContainsString('✓ Approve', $html);
+        $this->assertStringNotContainsString('class="actions"', $html);
+        $this->assertStringNotContainsString('Your 15 Business Taglines', $html);
+        $this->assertStringNotContainsString('Complete Business Website Draft for Cadworld Infoways', $html);
+        $this->assertStringContainsString('language-buttons', $html);
+        $this->assertStringContainsString('ગુજરાતી', $html);
+        $this->assertStringContainsString('हिन्दी', $html);
+        $this->assertStringContainsString('मराठी', $html);
+        $this->assertStringContainsString('languagePacks', $html);
+        $this->assertSame('હીરો બેનર', $payload['languages']['gu']['sections']['hero'] ?? null);
+        $this->assertStringContainsString('class="eye-btn"', $html);
+        $this->assertStringContainsString('class="reveal-body"', $html);
+        $this->assertStringContainsString('aria-expanded="false"', $html);
+    }
+
+    public function test_thirty_two_gun_regenerates_when_cached_file_is_old_tagline_format(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $session = ManageSession::factory()->create(['name' => '32 Gun', 'details' => '32 Gun']);
+        $prompt = SessionPrompt::factory()->active()->create([
+            'manage_session_id' => $session->id,
+            'title' => '32 Gun Details',
+            'body' => 'Complete Business Website Draft for {{businessName}}.',
+        ]);
+        $member = User::factory()->create(['name' => 'Alice Student']);
+        MemberProfile::factory()->create([
+            'user_id' => $member->id,
+            'business_name' => 'Cadworld Infoways',
+            'business_category' => 'Trading',
+            'business_description' => 'Wires and cables trading business.',
+            'main_products_services' => 'Wires and cables',
+            'business_location' => 'Mumbai',
+        ]);
+
+        $path = 'materials/session_'.$session->id.'/prompt_'.$prompt->id.'/user_'.$member->id.'.html';
+        Storage::disk('local')->put($path, '<html><body>Old tagline html</body></html>');
+        Storage::disk('local')->put(preg_replace('/\.html$/', '.json', $path), json_encode([
+            'format' => 'tagline',
+            'tagline' => ['rows' => []],
+        ]));
+        MaterialFile::query()->create([
+            'user_id' => $member->id,
+            'manage_session_id' => $session->id,
+            'session_prompt_id' => $prompt->id,
+            'file_path' => $path,
+            'generated_at' => now(),
+            'duration_ms' => 12,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.material.generate'), [
+                'manage_session_id' => $session->id,
+                'user_id' => $member->id,
+            ])
+            ->assertRedirect();
+
+        $payload = json_decode(Storage::disk('local')->get(preg_replace('/\.html$/', '.json', $path)), true);
+        $html = Storage::disk('local')->get($path);
+        $this->assertSame('website', $payload['format'] ?? null);
+        $this->assertCount(32, $payload['website']['sections'] ?? []);
+        $this->assertStringContainsString('Cadworld Infoways', $html);
+        $this->assertStringNotContainsString('Old tagline html', $html);
+    }
+
+    public function test_sixteen_saskar_session_generates_member_relationship_calendar(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $session = ManageSession::factory()->create(['name' => '16 Saskar', 'details' => '16 Sanskar Relationship Plan']);
+        SessionPrompt::factory()->active()->create([
+            'manage_session_id' => $session->id,
+            'title' => '16 Sanskar Details',
+            'body' => 'Create a Customer 16 Sanskar Relationship Calendar for {{businessName}} around {{mainProduct}}.',
+        ]);
+        $member = User::factory()->create(['name' => 'Alice Student']);
+        MemberProfile::factory()->create([
+            'user_id' => $member->id,
+            'business_name' => 'Cadworld Infoways',
+            'business_category' => 'Electrical Trading',
+            'business_description' => 'We are distributors of RR KABEL Wires & Cables, ABB Switchgears, and complete control panel accessories.',
+            'main_products_services' => 'RR KABEL Wires & Cables, ABB Switchgears, and complete control panel accessories',
+            'business_location' => 'Mumbai',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.material.generate'), [
+                'manage_session_id' => $session->id,
+                'user_id' => $member->id,
+            ])
+            ->assertRedirect();
+
+        $file = MaterialFile::query()->first();
+        $this->assertNotNull($file);
+        $jsonPath = preg_replace('/\.html$/', '.json', $file->file_path);
+        $this->assertTrue(Storage::disk('local')->exists($file->file_path));
+        $this->assertTrue(Storage::disk('local')->exists($jsonPath));
+        $html = Storage::disk('local')->get($file->file_path);
+        $payload = json_decode(Storage::disk('local')->get($jsonPath), true);
+
+        $this->assertSame('sanskar', $payload['format'] ?? null);
+        $this->assertCount(16, $payload['sanskar']['activities'] ?? []);
+        $this->assertStringContainsString('16 Sanskar Calendar', $html);
+        $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringContainsString('font-family: Poppins', $html);
+        $this->assertStringNotContainsString('Plus Jakarta Sans', $html);
+        $this->assertStringNotContainsString('Fraunces', $html);
+        $this->assertStringContainsString('Cadworld Infoways', $html);
+        $this->assertStringContainsString('Parichay', $html);
+        $this->assertStringContainsString('Sr No', $html);
+        $this->assertStringNotContainsString('<th>Month</th>', $html);
+        $this->assertStringContainsString('Customer Connect Meet', $html);
+        $this->assertStringContainsString('ABB Switchgear Workshop', $html);
+        $this->assertStringContainsString('Signature Customer Summit', $html);
+        $this->assertStringContainsString('Electrical Contractors', $html);
+        $this->assertStringContainsString('Cadworld Infoways તરફથી', $html);
+        $this->assertStringContainsString('16 Activities', $html);
+        $this->assertStringNotContainsString('ERP Automation Structure', $html);
+        $this->assertStringNotContainsString('Annual Budget Estimate', $html);
+        $this->assertStringNotContainsString('BNS Tagline Masterclass', $html);
+        $this->assertStringNotContainsString('Your 15 Business Taglines', $html);
+        $this->assertStringNotContainsString('Create a Customer 16 Sanskar Relationship Calendar for Cadworld Infoways', $html);
+        $this->assertStringContainsString('language-buttons', $html);
+        $this->assertStringContainsString('ગુજરાતી', $html);
+        $this->assertStringContainsString('हिन्दी', $html);
+        $this->assertStringContainsString('मराठी', $html);
+        $this->assertStringContainsString('languagePacks', $html);
+        $this->assertSame('પરિચય', $payload['languages']['gu']['sanskars']['Parichay'] ?? null);
+        $this->assertStringContainsString('class="eye-btn"', $html);
+        $this->assertStringContainsString('class="reveal-body"', $html);
+        $this->assertStringContainsString('aria-expanded="false"', $html);
+        $this->assertStringNotContainsString('class="panel reveal is-open"', $html);
     }
 
     public function test_empire_view_hides_session_prompt_from_generated_html(): void

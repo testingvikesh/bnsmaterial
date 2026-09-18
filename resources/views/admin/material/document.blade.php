@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['member_name'] }} — {{ $session->name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --brand: #ff6b00;
@@ -16,7 +17,7 @@
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            font-family: Poppins, Arial, sans-serif;
             color: var(--navy);
             background: var(--bg);
             line-height: 1.6;

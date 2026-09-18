@@ -31,7 +31,7 @@ class MaterialCopyPoints
         foreach (self::blocks($text) as $block) {
             foreach (self::expand($block) as $point) {
                 $point = self::clean($point);
-                if ($point !== '') {
+                if ($point !== '' && ! self::isJunk($point)) {
                     $points[] = $point;
                 }
             }
@@ -115,12 +115,24 @@ class MaterialCopyPoints
         if (count($numbered) > 1) {
             $out = [];
             foreach ($numbered as $part) {
+                $part = trim($part);
+                if (self::isJunk($part)) {
+                    continue;
+                }
+                if (self::isHeading($part) || self::isSectionLabel($part) || self::isOfferItem($part)) {
+                    $out[] = $part;
+                    continue;
+                }
                 foreach (self::expand($part) as $point) {
                     $out[] = $point;
                 }
             }
 
-            return $out;
+            return $out !== [] ? $out : [$block];
+        }
+
+        if (self::isOfferItem($block)) {
+            return [$block];
         }
 
         $sentences = self::sentences($block);
@@ -146,6 +158,7 @@ class MaterialCopyPoints
             '$1<prd>',
             $text
         ) ?? $text;
+        $protected = preg_replace('/(?<=^|[\s(])(\d+)\./u', '$1<prd>', $protected) ?? $protected;
 
         $parts = preg_split('/(?<=[.!?…।])\s+(?=\S)/u', $protected) ?: [];
         if (count($parts) <= 1) {
@@ -175,8 +188,12 @@ class MaterialCopyPoints
         $parts = preg_split('/(?=(?:^|\s)\d+[.)]\s+\S)/u', $text) ?: [];
         $out = [];
         foreach ($parts as $part) {
-            $part = trim(preg_replace('/^\d+[.)]\s+/u', '', trim($part)) ?? '');
-            if ($part !== '') {
+            $part = trim($part);
+            if (self::isJunk($part)) {
+                continue;
+            }
+            $part = trim(preg_replace('/^\d+[.)]\s+/u', '', $part) ?? '');
+            if ($part !== '' && ! self::isJunk($part)) {
                 $out[] = $part;
             }
         }
@@ -228,8 +245,33 @@ class MaterialCopyPoints
     private static function isHeading(string $value): bool
     {
         $trim = rtrim($value);
+        if (self::isJunk($trim)) {
+            return false;
+        }
+        if (self::isSectionLabel($trim)) {
+            return true;
+        }
 
         return mb_strlen($trim) <= 56 && str_ends_with($trim, ':') && ! preg_match('/[.!?…।]/u', $trim);
+    }
+
+    private static function isSectionLabel(string $value): bool
+    {
+        return (bool) preg_match('/^For\s+[A-Za-z][^:]{0,48}:?$/u', trim($value));
+    }
+
+    private static function isOfferItem(string $value): bool
+    {
+        $value = trim($value);
+
+        return (bool) preg_match('/^[A-Z][^.\n]{2,70}?\s*[:–-]/u', $value);
+    }
+
+    private static function isJunk(string $value): bool
+    {
+        $value = trim($value);
+
+        return $value === '' || (bool) preg_match('/^\d+[.)]?$/u', $value);
     }
 
     private static function clean(string $value): string
