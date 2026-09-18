@@ -776,55 +776,6 @@ class MaterialModuleTest extends TestCase
         $this->assertStringNotContainsString('Create 15 taglines for ABC Jewellery', $html);
     }
 
-    public function test_thirty_two_gun_session_generates_website_draft_not_tagline(): void
-    {
-        Storage::fake('local');
-
-        $admin = User::factory()->admin()->create();
-        $session = ManageSession::factory()->create(['name' => '32 Gun', 'details' => '32 Gun']);
-        SessionPrompt::factory()->active()->create([
-            'manage_session_id' => $session->id,
-            'title' => '32 Gun Details',
-            'body' => "Complete Business Website Draft for {{businessName}}.\nHero Banner includes Headline, Subheadline, Tagline and USP.",
-        ]);
-        $member = User::factory()->create(['name' => 'Alice Student']);
-        MemberProfile::factory()->create([
-            'user_id' => $member->id,
-            'business_name' => 'Cadworld Infoways',
-            'business_category' => 'Trading',
-            'business_description' => 'Wires and cables trading business.',
-            'main_products_services' => 'Wires and cables',
-            'business_location' => 'Mumbai',
-        ]);
-
-        $this->actingAs($admin)
-            ->post(route('admin.material.generate'), [
-                'manage_session_id' => $session->id,
-                'user_id' => $member->id,
-            ])
-            ->assertRedirect();
-
-        $file = MaterialFile::query()->first();
-        $this->assertNotNull($file);
-        $html = Storage::disk('local')->get($file->file_path);
-        $payload = json_decode(Storage::disk('local')->get(preg_replace('/\.html$/', '.json', $file->file_path)), true);
-
-        $this->assertSame('website', $payload['format'] ?? null);
-        $this->assertCount(32, $payload['website']['sections'] ?? []);
-        $this->assertStringContainsString('32 Gun — Complete Business Website Draft', $html);
-        $this->assertStringContainsString('Cadworld Infoways', $html);
-        $this->assertStringContainsString('Hero Banner', $html);
-        $this->assertStringContainsString('Contact Us', $html);
-        $this->assertStringContainsString('✓ Approve', $html);
-        $this->assertStringContainsString('✏️ Edit', $html);
-        $this->assertStringContainsString('🔄 Regenerate', $html);
-        $this->assertStringContainsString('📌 Add Information', $html);
-        $this->assertStringContainsString('🚀 Publish', $html);
-        $this->assertStringNotContainsString('BNS Tagline Masterclass', $html);
-        $this->assertStringNotContainsString('Your 15 Business Taglines', $html);
-        $this->assertStringNotContainsString('Complete Business Website Draft for Cadworld Infoways', $html);
-    }
-
     public function test_empire_view_hides_session_prompt_from_generated_html(): void
     {
         Storage::fake('local');

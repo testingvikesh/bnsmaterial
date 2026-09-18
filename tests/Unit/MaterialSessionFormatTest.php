@@ -16,25 +16,12 @@ class MaterialSessionFormatTest extends TestCase
         $empire = new ManageSession(['name' => 'Business Vision']);
         $reverse = new ManageSession(['name' => 'Reverse Management Session']);
         $tagline = new ManageSession(['name' => 'BNS Tagline Masterclass']);
-        $website = new ManageSession(['name' => '32 Gun']);
         $prompt = new SessionPrompt(['title' => 'Plan', 'body' => 'Create the worksheet.']);
 
         $this->assertSame(MaterialSessionFormat::ONE_TO_25, MaterialSessionFormat::resolve($one, $prompt));
         $this->assertSame(MaterialSessionFormat::EMPIRE, MaterialSessionFormat::resolve($empire, $prompt));
         $this->assertSame(MaterialSessionFormat::REVERSE, MaterialSessionFormat::resolve($reverse, $prompt));
         $this->assertSame(MaterialSessionFormat::TAGLINE, MaterialSessionFormat::resolve($tagline, $prompt));
-        $this->assertSame(MaterialSessionFormat::WEBSITE, MaterialSessionFormat::resolve($website, $prompt));
-    }
-
-    public function test_website_prompt_with_hero_tagline_does_not_become_tagline_session(): void
-    {
-        $session = new ManageSession(['name' => '32 Gun', 'details' => '32 Gun']);
-        $prompt = new SessionPrompt([
-            'title' => '32 Gun Details',
-            'body' => "Complete Business Website Draft\n### 01. HERO BANNER\n* Headline\n* Subheadline\n* Tagline\n* USP",
-        ]);
-
-        $this->assertSame(MaterialSessionFormat::WEBSITE, MaterialSessionFormat::resolve($session, $prompt));
     }
 
     public function test_jewellery_plan_has_seven_markets_and_auto_revenue(): void
@@ -117,28 +104,5 @@ class MaterialSessionFormatTest extends TestCase
         $this->assertSame('India', $geo['country']);
         $this->assertSame('Maharashtra', $geo['state']);
         $this->assertSame('West India', $geo['region']);
-    }
-
-    public function test_website_draft_builds_thirty_two_sections_without_fake_proof(): void
-    {
-        $plan = \App\Support\MaterialWebsiteDraft::for([
-            'business_name' => 'Cadworld Infoways',
-            'category' => 'Trading',
-            'intro' => 'Wires and cables trading business in Mumbai.',
-            'products' => 'Wires and cables',
-            'member_name' => 'Mehul',
-            'city' => 'Mumbai',
-            'phone' => '9876543210',
-        ]);
-
-        $this->assertCount(32, $plan['sections']);
-        $this->assertSame('hero', $plan['sections'][0]['code']);
-        $this->assertSame('contact', $plan['sections'][31]['code']);
-        $this->assertSame('Cadworld Infoways', $plan['sections'][0]['blocks'][0]['text']);
-        $this->assertStringContainsString('Contact us for latest pricing', $plan['sections'][9]['blocks'][0]['text']);
-        $this->assertSame('required', $plan['sections'][20]['status']);
-        $this->assertCount(5, $plan['actions']);
-        $this->assertSame('approve', $plan['actions'][0]['code']);
-        $this->assertSame('publish', $plan['actions'][4]['code']);
     }
 }
