@@ -38,6 +38,7 @@ class MaterialHtmlBuilder
             'empire' => 'admin.material.document-empire',
             'reverse' => 'admin.material.document-reverse',
             'tagline' => 'admin.material.document-tagline',
+            'website' => 'admin.material.document-website',
             default => 'admin.material.document',
         };
 
@@ -56,6 +57,7 @@ class MaterialHtmlBuilder
             'source' => $result['source'] ?? 'local',
             'reverse' => $result['reverse'] ?? [],
             'tagline' => $result['tagline'] ?? [],
+            'website' => $result['website'] ?? [],
         ])->render();
     }
 
