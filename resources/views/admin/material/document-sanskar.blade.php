@@ -101,6 +101,8 @@
             margin: 0 0 14px;
         }
         .title-row h2, .title-row h3 { margin: 0; flex: 1; min-width: 0; }
+        .badge,
+        [data-status] { display: none !important; }
         .eye-btn {
             flex: 0 0 auto; width: 38px; height: 38px; border-radius: 12px;
             border: 1px solid var(--line); background: #fff7ed; color: #c2410c;

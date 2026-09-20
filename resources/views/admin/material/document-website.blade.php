@@ -173,14 +173,8 @@
         }
         .tile.wide { grid-column: span 3; }
         .label { display: block; color: #c2410c; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
-        .badge {
-            display: inline-flex; border-radius: 999px; padding: 4px 9px;
-            font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
-        }
-        .badge.verified { background: #d1fae5; color: var(--verified); }
-        .badge.inferred { background: #dbeafe; color: var(--inferred); }
-        .badge.suggested { background: #ede9fe; color: var(--suggested); }
-        .badge.required { background: #ffe4e6; color: var(--required); }
+        .badge,
+        [data-status] { display: none !important; }
         .block-card .text { white-space: pre-wrap; line-height: 1.65; }
         .point-list { margin: 8px 0 0; padding-left: 20px; }
         .point-list li { margin: 0 0 8px; line-height: 1.6; }
@@ -234,12 +228,6 @@
     $seo = is_array($plan['seo'] ?? null) ? $plan['seo'] : [];
     $journey = is_array($plan['journey'] ?? null) ? $plan['journey'] : [];
     $report = is_array($plan['report'] ?? null) ? $plan['report'] : [];
-    $statusLabel = [
-        'verified' => 'Verified',
-        'inferred' => 'AI-Inferred',
-        'suggested' => 'AI-Suggested',
-        'required' => 'Information Required',
-    ];
     $biz = $plan['business_name'] ?? $facts['business_name'] ?? 'Business';
     $hero = collect($sections)->firstWhere('code', 'hero') ?: ($sections[0] ?? []);
     $heroMap = [];
@@ -355,7 +343,6 @@
                             <div class="tile {{ in_array($key, $wideKeys, true) ? 'wide' : '' }}">
                                 <span class="label" data-profile-label="{{ $key }}">{{ str_replace('_', ' ', $key) }}</span>
                                 <div data-copy-profile="{{ $key }}">{!! $copyHtml($item) !!}</div>
-                                <div style="margin-top:10px"><span class="badge {{ $item['status'] ?? 'inferred' }}" data-status="{{ $item['status'] ?? 'inferred' }}">{{ $statusLabel[$item['status'] ?? 'inferred'] ?? $item['status'] }}</span></div>
                             </div>
                         @endforeach
                     </div>
@@ -379,7 +366,6 @@
                 <section class="section-block reveal" id="sec-{{ $code }}">
                     <div class="section-kicker title-row">
                         <span class="no" data-section-title="{{ $code }}" data-section-no="{{ $section['no'] }}">{{ $section['no'] }}. {{ $section['title'] }}</span>
-                        <span class="badge {{ $section['status'] }}" data-status="{{ $section['status'] }}">{{ $statusLabel[$section['status']] ?? $section['status'] }}</span>
                         <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
                     </div>
                     <div class="reveal-body">
@@ -394,7 +380,6 @@
                                             <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>
                                         @endif
                                         <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
-                                        <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                     </div>
                                 @endforeach
                             </div>
@@ -422,7 +407,6 @@
                                 <div class="tile block-card">
                                     @if(($block['label'] ?? '') !== '')                                        <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>@endif
                                         <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
-                                    <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                 </div>
                             @endforeach
                         </div>
@@ -436,7 +420,6 @@
                                             <span class="label" data-block-label="{{ $block['label'] }}">{{ $block['label'] }}</span>
                                         @endif
                                         <div data-copy-section="{{ $code }}" data-copy-index="{{ $blockIndex }}">{!! $copyHtml($block) !!}</div>
-                                        <div style="margin-top:10px"><span class="badge {{ $block['status'] ?? 'inferred' }}" data-status="{{ $block['status'] ?? 'inferred' }}">{{ $statusLabel[$block['status'] ?? 'inferred'] ?? ($block['status'] ?? '') }}</span></div>
                                     </div>
                                 @endforeach
                             </div>
@@ -478,7 +461,6 @@
                         @foreach($journey as $journeyIndex => $item)
                             <li>
                                 <div><strong data-copy-journey-q="{{ $journeyIndex }}">{{ $item['question'] }}</strong><div class="text" data-copy-journey-a="{{ $journeyIndex }}">{!! $em($item['answer'] ?? '') !!}</div></div>
-                                <span class="badge {{ $item['status'] }}" data-status="{{ $item['status'] }}">{{ $statusLabel[$item['status']] ?? $item['status'] }}</span>
                             </li>
                         @endforeach
                     </ol>
