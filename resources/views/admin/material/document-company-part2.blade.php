@@ -133,20 +133,22 @@
             border-radius: 999px; background: #e2e8f0; color: #64748b; font-size: 12px;
         }
         .summary-btn {
-            border: 1px solid rgba(255,255,255,.28);
-            background: #ff6b00; color: #fff; padding: 6px 12px; border-radius: 999px;
-            cursor: pointer; font-weight: 800; font-size: 12px; white-space: nowrap;
+            position: fixed; right: 22px; bottom: 22px; z-index: 90;
+            border: 0; background: #ff6b00; color: #fff;
+            padding: 14px 20px; border-radius: 999px;
+            cursor: pointer; font-weight: 800; font-size: 14px; white-space: nowrap;
+            box-shadow: 0 12px 28px rgba(194, 65, 12, .35);
         }
-        .summary-btn:hover { background: #fff; color: #071422; }
+        .summary-btn:hover { background: #c2410c; color: #fff; }
         .summary-overlay {
             position: fixed; inset: 0; z-index: 80; display: none;
             background: rgba(7, 20, 34, .48);
         }
         .summary-overlay.is-open { display: block; }
         .summary-card {
-            position: absolute; top: 78px; right: 18px;
+            position: absolute; right: 18px; bottom: 84px; top: auto;
             width: min(440px, calc(100vw - 36px));
-            max-height: calc(100vh - 110px);
+            max-height: calc(100vh - 120px);
             overflow: auto;
             background: #fffdf9; color: #10243d; border-radius: 22px;
             box-shadow: 0 24px 60px rgba(7, 20, 34, .28);
@@ -248,7 +250,6 @@
         </div>
         <div class="top-meta">
             <div class="language-buttons">
-                <button type="button" class="summary-btn" id="summaryOpen" data-i18n="summaryBtn">Summary</button>
                 <button class="active" onclick="changeLanguage('en', this)">ENGLISH</button>
                 <button onclick="changeLanguage('gu', this)">ગુજરાતી</button>
                 <button onclick="changeLanguage('hi', this)">हिन्दी</button>
@@ -343,6 +344,7 @@
     </section>
     <div class="footer" data-i18n="footer2">Business Navachar School™ · PVT LTD Session (Part 2)</div>
 </div>
+<button type="button" class="summary-btn" id="summaryOpen" data-i18n="summaryBtn">Summary</button>
 <div class="summary-overlay" id="summaryPanel">
     <div class="summary-card">
         <div class="summary-head">
@@ -503,7 +505,8 @@
     const summaryClose = document.getElementById('summaryClose');
     if (summaryOpen) summaryOpen.addEventListener('click', function (event) {
         event.preventDefault();
-        openSummary();
+        if (summaryPanel && summaryPanel.classList.contains('is-open')) closeSummary();
+        else openSummary();
     });
     if (summaryClose) summaryClose.addEventListener('click', function (event) {
         event.preventDefault();
