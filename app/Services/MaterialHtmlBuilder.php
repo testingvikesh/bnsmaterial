@@ -6,6 +6,7 @@ use App\Models\ManageSession;
 use App\Models\MemberProfile;
 use App\Models\SessionPrompt;
 use App\Models\User;
+use App\Support\MaterialCompanyI18n;
 use App\Support\MaterialSanskarI18n;
 use App\Support\MaterialWebsiteI18n;
 use Illuminate\Support\Carbon;
@@ -56,6 +57,9 @@ class MaterialHtmlBuilder
         } elseif ($format === 'website' && is_array($result['website'] ?? null) && $result['website'] !== []) {
             $plan = $result['website'];
             $languages = MaterialWebsiteI18n::packs((string) ($plan['business_name'] ?? $biz), $plan);
+        } elseif (in_array($format, ['company', 'company_part2'], true) && is_array($result['company'] ?? null) && $result['company'] !== []) {
+            $plan = $result['company'];
+            $languages = MaterialCompanyI18n::packs((string) ($plan['business_name'] ?? $biz), $plan);
         }
 
         return view($view, [

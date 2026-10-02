@@ -60,6 +60,13 @@ class MaterialSessionFormatTest extends TestCase
         $json = json_encode($plan);
         $this->assertStringNotContainsString('Circle Time', $json);
         $this->assertStringNotContainsString('Circle Activity', $json);
+
+        $packs = \App\Support\MaterialCompanyI18n::packs('Cadworld Infoways', $plan);
+        $this->assertSame(['en', 'gu', 'hi', 'mr'], array_keys($packs));
+        $this->assertSame('એકમાલિકી', $packs['gu']['copy']['headers'][0]);
+        $this->assertSame('एकल स्वामित्व', $packs['hi']['copy']['headers'][0]);
+        $this->assertSame('एकमालकी', $packs['mr']['copy']['headers'][0]);
+        $this->assertSame('LLP', $packs['gu']['copy']['headers'][2]);
     }
 
     public function test_company_structure_part_two_has_points_101_to_200(): void
@@ -79,6 +86,11 @@ class MaterialSessionFormatTest extends TestCase
         $this->assertSame(200, $plan['growth'][9]['no']);
         $this->assertCount(15, $plan['decisions']);
         $this->assertStringContainsString('Capital Market', $plan['formula']);
+
+        $packs = \App\Support\MaterialCompanyI18n::packs('Cadworld Infoways', $plan);
+        $this->assertSame('એકમાલિકી', $packs['gu']['copy']['headers'][0]);
+        $this->assertSame('પ્રાઇવેટ લિમિટેડ', $packs['gu']['copy']['headers'][3]);
+        $this->assertNotEmpty($packs['gu']['copy']['master'][0]['point']);
     }
 
     public function test_sixteen_sanskar_name_wins_even_if_prompt_mentions_tagline(): void

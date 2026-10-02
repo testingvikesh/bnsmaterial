@@ -1006,6 +1006,13 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('Private Limited Company', $html);
         $this->assertStringContainsString('Cadworld Infoways', $html);
         $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringContainsString('language-buttons', $html);
+        $this->assertStringContainsString('languagePacks', $html);
+        $this->assertStringContainsString('"gu"', $html);
+        $this->assertStringContainsString('"hi"', $html);
+        $this->assertStringContainsString('"mr"', $html);
+        $this->assertStringContainsString('એકમાલિકી', $html);
+        $this->assertStringContainsString('<strong>', $html);
         $this->assertStringNotContainsString('Circle Time', $html);
         $this->assertStringNotContainsString('Circle Activity', $html);
         $this->assertStringNotContainsString('Verified', $html);
@@ -1055,6 +1062,13 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('Cadworld Infoways', $html);
         $this->assertStringContainsString('Decision-Making Comparison for Students', $html);
         $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringContainsString('language-buttons', $html);
+        $this->assertStringContainsString('languagePacks', $html);
+        $this->assertStringContainsString('"gu"', $html);
+        $this->assertStringContainsString('"hi"', $html);
+        $this->assertStringContainsString('"mr"', $html);
+        $this->assertStringContainsString('એકમાલિકી', $html);
+        $this->assertStringContainsString('<strong>', $html);
         $this->assertStringNotContainsString('Circle Time', $html);
         $this->assertStringNotContainsString('50-Point Complete Comparison', $html);
     }

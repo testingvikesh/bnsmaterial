@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\MaterialEmpireVision;
 use App\Support\MaterialOneTo25;
 use App\Support\MaterialReverseManagement;
+use App\Support\MaterialCompanyI18n;
 use App\Support\MaterialCompanyStructure;
 use App\Support\MaterialCompanyStructurePart2;
 use App\Support\MaterialSanskarCalendar;
@@ -431,6 +432,7 @@ class MaterialIdeaGenerator
             'member_name' => (string) $user->name,
             'category' => $facts['category'],
         ]);
+        $languages = MaterialCompanyI18n::packs($businessName, $plan);
 
         return [
             'source' => 'local',
@@ -453,6 +455,7 @@ class MaterialIdeaGenerator
             'snapshot' => $snapshot,
             'ideas' => [],
             'company' => $plan,
+            'languages' => $languages,
         ];
     }
 
@@ -476,6 +479,7 @@ class MaterialIdeaGenerator
             'member_name' => (string) $user->name,
             'category' => $facts['category'],
         ]);
+        $languages = MaterialCompanyI18n::packs($businessName, $plan);
 
         return [
             'source' => 'local',
@@ -498,6 +502,7 @@ class MaterialIdeaGenerator
             'snapshot' => $snapshot,
             'ideas' => [],
             'company' => $plan,
+            'languages' => $languages,
         ];
     }
 

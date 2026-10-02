@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['business_name'] ?? 'Business' }} — PVT LTD Session Part 2</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --navy: #071422;
@@ -13,10 +13,27 @@
             --gold: #ffb800;
             --line: #eadfce;
             --paper: #fffdf9;
-            --font-ui: Poppins, Arial, sans-serif;
+            --font-ui: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            --font-gu: "Noto Sans Gujarati", "Nirmala UI", Poppins, Arial, sans-serif;
+            --font-mr: "Noto Sans Devanagari", "Nirmala UI", Mangal, Poppins, Arial, sans-serif;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
+        html[lang="gu"] { --font-ui: var(--font-gu); }
+        html[lang="hi"],
+        html[lang="mr"] { --font-ui: var(--font-mr); }
+        html[lang="gu"] h1, html[lang="gu"] h2, html[lang="gu"] h3,
+        html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3,
+        html[lang="mr"] h1, html[lang="mr"] h2, html[lang="mr"] h3 {
+            letter-spacing: 0;
+            font-kerning: normal;
+        }
+        html[lang="gu"] .kicker, html[lang="gu"] .formula small, html[lang="gu"] thead th,
+        html[lang="hi"] .kicker, html[lang="hi"] .formula small, html[lang="hi"] thead th,
+        html[lang="mr"] .kicker, html[lang="mr"] .formula small, html[lang="mr"] thead th {
+            letter-spacing: 0;
+            text-transform: none;
+        }
         body {
             margin: 0;
             font-family: var(--font-ui);
@@ -45,6 +62,15 @@
         .brand-mark small { display: block; color: #ffb800; letter-spacing: .12em; text-transform: uppercase; font-size: 10px; font-weight: 800; }
         .brand-mark strong { display: block; font-size: 18px; line-height: 1.2; }
         .top-meta { color: #cbd5e1; font-size: 13px; font-weight: 600; text-align: right; }
+        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; }
+        .language-buttons button {
+            border: 1px solid rgba(255,255,255,.28);
+            background: rgba(255,255,255,.08);
+            color: #fff; padding: 6px 10px; border-radius: 999px;
+            cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; flex-shrink: 0;
+        }
+        .language-buttons button:hover,
+        .language-buttons button.active { background: #fff; color: #071422; }
         .hero {
             margin-top: 18px; color: #fff; overflow: hidden; border-radius: 28px;
             padding: 42px 40px 36px;
@@ -111,14 +137,15 @@
         .formula strong { display: block; font-family: var(--font-ui); font-size: 20px; margin: 10px 0 12px; line-height: 1.45; }
         .footer { text-align: center; color: #64748b; padding: 18px 8px 0; font-size: 13px; line-height: 1.6; }
         strong { color: #c2410c; font-weight: 800; }
-        .hero strong, .formula strong { color: inherit; }
+        .hero strong, .formula strong, .brand-mark strong { color: inherit; }
+        td strong { color: #c2410c; font-weight: 800; }
         @media (max-width: 860px) {
             .hero { padding: 28px 20px; }
             .topbar { flex-direction: column; align-items: flex-start; }
         }
         @media print {
             .topbar, .nav { position: static; }
-            .eye-btn { display: none !important; }
+            .language-buttons, .eye-btn { display: none !important; }
             .reveal-body { display: block !important; }
             body { background: #fff; }
         }
@@ -131,15 +158,25 @@
     $member = (string) ($plan['member_name'] ?? $facts['member_name'] ?? '');
     $headers = is_array($plan['headers'] ?? null) ? $plan['headers'] : [];
     $blocks = [
-        ['id' => 'master', 'title' => 'Business Structure Master Comparison', 'open' => true, 'rows' => $plan['master'] ?? []],
-        ['id' => 'finance', 'title' => 'Finance & Accounting Comparison', 'open' => false, 'rows' => $plan['finance'] ?? []],
-        ['id' => 'legal', 'title' => 'Legal & Document Comparison', 'open' => false, 'rows' => $plan['legal'] ?? []],
-        ['id' => 'management', 'title' => 'Management Comparison', 'open' => false, 'rows' => $plan['management'] ?? []],
-        ['id' => 'growth', 'title' => 'Growth & Scaling Comparison', 'open' => false, 'rows' => $plan['growth'] ?? []],
+        ['id' => 'master', 'titleKey' => 'masterTitle', 'title' => 'Business Structure Master Comparison', 'open' => true, 'path' => 'master', 'rows' => $plan['master'] ?? []],
+        ['id' => 'finance', 'titleKey' => 'financeTitle', 'title' => 'Finance & Accounting Comparison', 'open' => false, 'path' => 'finance', 'rows' => $plan['finance'] ?? []],
+        ['id' => 'legal', 'titleKey' => 'legalTitle', 'title' => 'Legal & Document Comparison', 'open' => false, 'path' => 'legal', 'rows' => $plan['legal'] ?? []],
+        ['id' => 'management', 'titleKey' => 'managementTitle', 'title' => 'Management Comparison', 'open' => false, 'path' => 'management', 'rows' => $plan['management'] ?? []],
+        ['id' => 'growth', 'titleKey' => 'growthTitle', 'title' => 'Growth & Scaling Comparison', 'open' => false, 'path' => 'growth', 'rows' => $plan['growth'] ?? []],
     ];
     $decisions = is_array($plan['decisions'] ?? null) ? $plan['decisions'] : [];
     $initials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $biz) ?: 'B', 0, 2));
-    $mark = function ($value) {
+    $languagePacks = $languages ?: ($plan['languages'] ?? []);
+    $phrases = array_values(array_filter(array_merge([
+        $biz,
+        $member,
+        'LLP', 'MOA', 'AOA', 'IPO', 'GST', 'ROC', 'MCA',
+        'Private Limited', 'Public Limited', 'Proprietorship', 'Partnership',
+        'Pvt Ltd', 'Public Ltd', 'Shareholders', 'Directors', 'Liability',
+        'Compliance', 'Funding', 'Capital Market',
+    ], $headers), fn ($value) => $value !== '' && $value !== '—'));
+    $em = fn ($text) => \App\Support\MaterialEmphasis::html((string) $text, $phrases);
+    $mark = function ($value) use ($em) {
         $raw = str_replace(['✅', '❌'], ['Yes', 'No'], trim((string) $value));
         $low = strtolower($raw);
         if (in_array($low, ['yes', 'y', 'true'], true)) {
@@ -152,7 +189,7 @@
             return '<span class="chip chip-dash">—</span>';
         }
 
-        return e($raw);
+        return $em($raw);
     };
 @endphp
 <div class="shell">
@@ -160,35 +197,41 @@
         <div class="brand-mark">
             <div class="logo-dot">{{ $initials }}</div>
             <div>
-                <small>Business Navachar School™</small>
+                <small data-i18n="kicker2">BNS PVT LTD Session · Part 2</small>
                 <strong>{{ $biz }}</strong>
             </div>
         </div>
         <div class="top-meta">
-            {{ $plan['kicker'] ?? 'BNS PVT LTD Session · Part 2' }}<br>
-            @if($member !== ''){{ $member }} · @endif Students &amp; Business Owners
+            <div class="language-buttons">
+                <button class="active" onclick="changeLanguage('en', this)">ENGLISH</button>
+                <button onclick="changeLanguage('gu', this)">ગુજરાતી</button>
+                <button onclick="changeLanguage('hi', this)">हिन्दी</button>
+                <button onclick="changeLanguage('mr', this)">मराठी</button>
+            </div>
+            <span data-i18n="kicker2">{{ $plan['kicker'] ?? 'BNS PVT LTD Session · Part 2' }}</span><br>
+            @if($member !== ''){{ $member }} · @endif<span data-i18n="studentsOwners">Students &amp; Business Owners</span>
         </div>
     </div>
 
     <section class="hero">
-        <div class="kicker">{{ $plan['kicker'] ?? 'BNS PVT LTD Session · Part 2' }}</div>
-        <h1>{{ $plan['title'] ?? 'Business Structure Master Comparison' }}</h1>
-        <p>{{ $plan['subtitle'] ?? 'Points 101–200' }}</p>
+        <div class="kicker" data-i18n="kicker2">{{ $plan['kicker'] ?? 'BNS PVT LTD Session · Part 2' }}</div>
+        <h1 data-i18n="title2">{{ $plan['title'] ?? 'Business Structure Master Comparison' }}</h1>
+        <p data-i18n="subtitle2">{{ $plan['subtitle'] ?? 'Points 101–200' }}</p>
     </section>
 
     <nav class="nav">
-        <a href="#master">101–150 Structure</a>
-        <a href="#finance">151–170 Finance</a>
-        <a href="#legal">171–180 Legal</a>
-        <a href="#management">181–190 Management</a>
-        <a href="#growth">191–200 Growth</a>
-        <a href="#decisions">Student Decisions</a>
+        <a href="#master" data-i18n="navMaster">101–150 Structure</a>
+        <a href="#finance" data-i18n="navFinance">151–170 Finance</a>
+        <a href="#legal" data-i18n="navLegal">171–180 Legal</a>
+        <a href="#management" data-i18n="navManagement">181–190 Management</a>
+        <a href="#growth" data-i18n="navGrowth">191–200 Growth</a>
+        <a href="#decisions" data-i18n="navDecisions">Student Decisions</a>
     </nav>
 
     @foreach($blocks as $block)
         <section class="panel reveal{{ !empty($block['open']) ? ' is-open' : '' }}" id="{{ $block['id'] }}">
             <div class="title-row">
-                <h2>{{ $block['title'] }}</h2>
+                <h2 data-i18n="{{ $block['titleKey'] }}">{{ $block['title'] }}</h2>
                 <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
             </div>
             <div class="reveal-body">
@@ -196,20 +239,20 @@
                     <table>
                         <thead>
                             <tr>
-                                <th class="srno">#</th>
-                                <th>Point</th>
-                                @foreach($headers as $header)
-                                    <th>{{ $header }}</th>
+                                <th class="srno" data-i18n="thNo">#</th>
+                                <th data-i18n="thPoint">Point</th>
+                                @foreach($headers as $headerIndex => $header)
+                                    <th data-copy-path="headers.{{ $headerIndex }}">{{ $header }}</th>
                                 @endforeach
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($block['rows'] as $row)
+                            @foreach($block['rows'] as $rowIndex => $row)
                                 <tr>
                                     <td class="srno">{{ $row['no'] }}</td>
-                                    <td class="sticky">{{ $row['point'] }}</td>
-                                    @foreach(($row['cells'] ?? []) as $cell)
-                                        <td>{!! $mark($cell) !!}</td>
+                                    <td class="sticky" data-copy-path="{{ $block['path'] }}.{{ $rowIndex }}.point">{!! $em($row['point'] ?? '') !!}</td>
+                                    @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
+                                        <td data-copy-path="{{ $block['path'] }}.{{ $rowIndex }}.cells.{{ $cellIndex }}">{!! $mark($cell) !!}</td>
                                     @endforeach
                                 </tr>
                             @endforeach
@@ -222,7 +265,7 @@
 
     <section class="panel reveal" id="decisions">
         <div class="title-row">
-            <h2>Decision-Making Comparison for Students</h2>
+            <h2 data-i18n="decisionsTitle">Decision-Making Comparison for Students</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
@@ -230,15 +273,15 @@
                 <table style="min-width:640px">
                     <thead>
                         <tr>
-                            <th>Business Situation</th>
-                            <th>Common Structures to Consider</th>
+                            <th data-i18n="thSituation">Business Situation</th>
+                            <th data-i18n="thConsider">Common Structures to Consider</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($decisions as $row)
+                        @foreach($decisions as $rowIndex => $row)
                             <tr>
-                                <td class="sticky">{{ $row['situation'] }}</td>
-                                <td><strong>{{ $row['structures'] }}</strong></td>
+                                <td class="sticky" data-copy-path="decisions.{{ $rowIndex }}.situation">{!! $em($row['situation'] ?? '') !!}</td>
+                                <td data-copy-path="decisions.{{ $rowIndex }}.structures">{!! $em($row['structures'] ?? '') !!}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -248,23 +291,103 @@
     </section>
 
     <section class="formula">
-        <small>Key Formula for BNS Students</small>
-        <strong>{{ $plan['formula'] ?? '' }}</strong>
-        <div>{{ $plan['disclaimer'] ?? '' }}</div>
+        <small data-i18n="formulaKicker2">Key Formula for BNS Students</small>
+        <strong data-copy-path="formula">{{ $plan['formula'] ?? '' }}</strong>
+        <div data-copy-path="disclaimer">{!! $em($plan['disclaimer'] ?? '') !!}</div>
     </section>
-    <div class="footer">Business Navachar School™ · PVT LTD Session (Part 2)</div>
+    <div class="footer" data-i18n="footer2">Business Navachar School™ · PVT LTD Session (Part 2)</div>
 </div>
 <script>
 (function () {
-    const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8 11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const languagePacks = @json($languagePacks ?: [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    const businessName = @json($biz, JSON_UNESCAPED_UNICODE);
+    const memberName = @json($member, JSON_UNESCAPED_UNICODE);
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+    function emphasize(text, phrases) {
+        const raw = String(text || '').trim();
+        if (!raw) return '';
+        if (raw.length <= 48 && !/[.!?…।]/.test(raw.replace(/:$/, ''))) {
+            return '<strong>' + escapeHtml(raw) + '</strong>';
+        }
+        let html = escapeHtml(raw);
+        (phrases || []).slice().sort(function (a, b) { return String(b).length - String(a).length; }).forEach(function (phrase) {
+            phrase = String(phrase || '').trim();
+            if (!phrase || phrase === '—') return;
+            const safe = escapeHtml(phrase).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (!safe) return;
+            html = html.replace(new RegExp(safe, 'gi'), function (match) {
+                return '<strong>' + match + '</strong>';
+            });
+        });
+        return html;
+    }
+    function mark(value, ui, phrases) {
+        const raw = String(value || '').replace(/✅/g, 'Yes').replace(/❌/g, 'No').trim();
+        const low = raw.toLowerCase();
+        if (['yes', 'y', 'true'].indexOf(low) !== -1) {
+            return '<span class="chip chip-yes">' + escapeHtml(ui.chipYes || 'Yes') + '</span>';
+        }
+        if (['no', 'n', 'false'].indexOf(low) !== -1) {
+            return '<span class="chip chip-no">' + escapeHtml(ui.chipNo || 'No') + '</span>';
+        }
+        if (raw === '—' || raw === '-') {
+            return '<span class="chip chip-dash">—</span>';
+        }
+        return emphasize(raw, phrases);
+    }
+    function getPath(obj, path) {
+        return String(path || '').split('.').reduce(function (current, key) {
+            if (current == null) return null;
+            return current[key];
+        }, obj);
+    }
+    function applyCopy(copy, ui) {
+        const phrases = [businessName, memberName].concat(copy.headers || []).concat([
+            'LLP', 'MOA', 'AOA', 'IPO', 'GST', 'ROC', 'MCA'
+        ]).filter(Boolean);
+        document.querySelectorAll('[data-copy-path]').forEach(function (el) {
+            const value = getPath(copy, el.getAttribute('data-copy-path'));
+            if (value == null || typeof value === 'object') return;
+            if (el.tagName === 'TH' || (el.tagName === 'STRONG' && el.closest('.formula'))) {
+                el.textContent = value;
+                return;
+            }
+            el.innerHTML = mark(value, ui, phrases);
+        });
+    }
+    function applyLanguage(language) {
+        const pack = languagePacks[language] || languagePacks.en || {};
+        const ui = pack.ui || {};
+        document.documentElement.lang = language;
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+            const key = el.getAttribute('data-i18n');
+            if (key && ui[key]) el.textContent = ui[key];
+        });
+        applyCopy(pack.copy || {}, ui);
+        paintEyes();
+    }
+    window.changeLanguage = function (language, button) {
+        document.querySelectorAll('.language-buttons button').forEach(function (btn) { btn.classList.remove('active'); });
+        button.classList.add('active');
+        applyLanguage(language);
+    };
+    const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     const eyeShut = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
     function paintEyes() {
+        const pack = languagePacks[document.documentElement.lang] || languagePacks.en || {};
+        const ui = pack.ui || {};
         document.querySelectorAll('.eye-btn').forEach(function (btn) {
             const box = btn.closest('.reveal');
             const open = box && box.classList.contains('is-open');
             btn.innerHTML = open ? eyeShut : eyeOpen;
             btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            btn.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
+            btn.setAttribute('aria-label', open ? (ui.hideDetails || 'Hide details') : (ui.showDetails || 'Show details'));
         });
     }
     document.querySelectorAll('.eye-btn').forEach(function (btn) {
@@ -278,6 +401,7 @@
         });
     });
     paintEyes();
+    applyLanguage('en');
 })();
 </script>
 </body>

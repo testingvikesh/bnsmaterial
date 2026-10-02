@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $facts['business_name'] ?? 'Business' }} — PVT LTD Session</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Noto+Sans+Gujarati:wght@400;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --navy: #071422;
@@ -13,10 +13,27 @@
             --gold: #ffb800;
             --line: #eadfce;
             --paper: #fffdf9;
-            --font-ui: Poppins, Arial, sans-serif;
+            --font-ui: Poppins, "Noto Sans Gujarati", "Noto Sans Devanagari", Arial, sans-serif;
+            --font-gu: "Noto Sans Gujarati", "Nirmala UI", Poppins, Arial, sans-serif;
+            --font-mr: "Noto Sans Devanagari", "Nirmala UI", Mangal, Poppins, Arial, sans-serif;
         }
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
+        html[lang="gu"] { --font-ui: var(--font-gu); }
+        html[lang="hi"],
+        html[lang="mr"] { --font-ui: var(--font-mr); }
+        html[lang="gu"] h1, html[lang="gu"] h2, html[lang="gu"] h3,
+        html[lang="hi"] h1, html[lang="hi"] h2, html[lang="hi"] h3,
+        html[lang="mr"] h1, html[lang="mr"] h2, html[lang="mr"] h3 {
+            letter-spacing: 0;
+            font-kerning: normal;
+        }
+        html[lang="gu"] .kicker, html[lang="gu"] .label, html[lang="gu"] .no, html[lang="gu"] .formula small, html[lang="gu"] thead th,
+        html[lang="hi"] .kicker, html[lang="hi"] .label, html[lang="hi"] .no, html[lang="hi"] .formula small, html[lang="hi"] thead th,
+        html[lang="mr"] .kicker, html[lang="mr"] .label, html[lang="mr"] .no, html[lang="mr"] .formula small, html[lang="mr"] thead th {
+            letter-spacing: 0;
+            text-transform: none;
+        }
         body {
             margin: 0;
             font-family: var(--font-ui);
@@ -45,6 +62,15 @@
         .brand-mark small { display: block; color: #ffb800; letter-spacing: .12em; text-transform: uppercase; font-size: 10px; font-weight: 800; }
         .brand-mark strong { display: block; font-size: 18px; line-height: 1.2; }
         .top-meta { color: #cbd5e1; font-size: 13px; font-weight: 600; text-align: right; }
+        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; }
+        .language-buttons button {
+            border: 1px solid rgba(255,255,255,.28);
+            background: rgba(255,255,255,.08);
+            color: #fff; padding: 6px 10px; border-radius: 999px;
+            cursor: pointer; font-weight: 700; font-size: 12px; white-space: nowrap; flex-shrink: 0;
+        }
+        .language-buttons button:hover,
+        .language-buttons button.active { background: #fff; color: #071422; }
         .hero {
             margin-top: 18px; color: #fff; overflow: hidden; border-radius: 28px;
             padding: 42px 40px 36px;
@@ -134,7 +160,8 @@
         .formula strong { display: block; font-family: var(--font-ui); font-size: 20px; margin: 10px 0 12px; line-height: 1.45; }
         .footer { text-align: center; color: #64748b; padding: 18px 8px 0; font-size: 13px; line-height: 1.6; }
         strong { color: #c2410c; font-weight: 800; }
-        .hero strong, .formula strong { color: inherit; }
+        .hero strong, .formula strong, .brand-mark strong { color: inherit; }
+        td strong, .point-list strong, .note strong, .q-list strong, .entity .reveal-body strong { color: #c2410c; font-weight: 800; }
         @media (max-width: 860px) {
             .hero { padding: 28px 20px; }
             .grid { grid-template-columns: 1fr; }
@@ -142,7 +169,7 @@
         }
         @media print {
             .topbar, .nav { position: static; }
-            .eye-btn { display: none !important; }
+            .language-buttons, .eye-btn { display: none !important; }
             .reveal-body { display: block !important; }
             body { background: #fff; }
         }
@@ -162,7 +189,17 @@
     $stages = is_array($plan['stages'] ?? null) ? $plan['stages'] : [];
     $questions = is_array($plan['questions'] ?? null) ? $plan['questions'] : [];
     $initials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $biz) ?: 'B', 0, 2));
-    $mark = function ($value) {
+    $languagePacks = $languages ?: ($plan['languages'] ?? []);
+    $phrases = array_values(array_filter(array_merge([
+        $biz,
+        $member,
+        'LLP', 'MOA', 'AOA', 'IPO', 'GST', 'ROC', 'MCA',
+        'Private Limited', 'Public Limited', 'Proprietorship', 'Partnership',
+        'Pvt Ltd', 'Public Ltd', 'Shareholders', 'Directors', 'Liability',
+        'Compliance', 'Funding', 'Capital Market', 'Private Limited Company', 'Public Limited Company',
+    ], $headers), fn ($value) => $value !== '' && $value !== '—'));
+    $em = fn ($text) => \App\Support\MaterialEmphasis::html((string) $text, $phrases);
+    $mark = function ($value) use ($em) {
         $raw = trim((string) $value);
         $low = strtolower($raw);
         if (in_array($low, ['yes', 'y', 'true'], true)) {
@@ -175,7 +212,7 @@
             return '<span class="chip chip-dash">—</span>';
         }
 
-        return e($raw);
+        return $em($raw);
     };
 @endphp
 <div class="shell">
@@ -183,35 +220,41 @@
         <div class="brand-mark">
             <div class="logo-dot">{{ $initials }}</div>
             <div>
-                <small>Business Navachar School™</small>
+                <small data-i18n="kicker">BNS PVT LTD Session</small>
                 <strong>{{ $biz }}</strong>
             </div>
         </div>
         <div class="top-meta">
-            {{ $plan['kicker'] ?? 'BNS PVT LTD Session' }}<br>
-            @if($member !== ''){{ $member }} · @endif Students &amp; Business Owners
+            <div class="language-buttons">
+                <button class="active" onclick="changeLanguage('en', this)">ENGLISH</button>
+                <button onclick="changeLanguage('gu', this)">ગુજરાતી</button>
+                <button onclick="changeLanguage('hi', this)">हिन्दी</button>
+                <button onclick="changeLanguage('mr', this)">मराठी</button>
+            </div>
+            <span data-i18n="kicker">{{ $plan['kicker'] ?? 'BNS PVT LTD Session' }}</span><br>
+            @if($member !== ''){{ $member }} · @endif<span data-i18n="studentsOwners">Students &amp; Business Owners</span>
         </div>
     </div>
 
     <section class="hero">
-        <div class="kicker">{{ $plan['kicker'] ?? 'BNS PVT LTD Session' }}</div>
-        <h1>{{ $plan['title'] ?? 'Company Structure Comparison' }}</h1>
-        <p>{{ $plan['subtitle'] ?? 'Complete Comparison for Students & Business Owners' }}</p>
+        <div class="kicker" data-i18n="kicker">{{ $plan['kicker'] ?? 'BNS PVT LTD Session' }}</div>
+        <h1 data-i18n="title">{{ $plan['title'] ?? 'Company Structure Comparison' }}</h1>
+        <p data-i18n="subtitle">{{ $plan['subtitle'] ?? 'Complete Comparison for Students & Business Owners' }}</p>
     </section>
 
     <nav class="nav">
-        <a href="#compare">50-Point Comparison</a>
-        <a href="#entities">5 Structures</a>
-        <a href="#expenses">Business Expenses</a>
-        <a href="#owners">Owner Comparison</a>
-        <a href="#funding">Funding</a>
-        <a href="#stages">Empire Journey</a>
-        <a href="#questions">10 Questions</a>
+        <a href="#compare" data-i18n="navCompare">50-Point Comparison</a>
+        <a href="#entities" data-i18n="navEntities">5 Structures</a>
+        <a href="#expenses" data-i18n="navExpenses">Business Expenses</a>
+        <a href="#owners" data-i18n="navOwners">Owner Comparison</a>
+        <a href="#funding" data-i18n="navFunding">Funding</a>
+        <a href="#stages" data-i18n="navStages">Empire Journey</a>
+        <a href="#questions" data-i18n="navQuestions">10 Questions</a>
     </nav>
 
     <section class="panel reveal is-open" id="compare">
         <div class="title-row">
-            <h2>50-Point Complete Comparison</h2>
+            <h2 data-i18n="compareTitle">50-Point Complete Comparison</h2>
             <button type="button" class="eye-btn" aria-label="Hide details" aria-expanded="true"></button>
         </div>
         <div class="reveal-body">
@@ -219,20 +262,20 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="srno">#</th>
-                            <th class="sticky">Point</th>
-                            @foreach($headers as $header)
-                                <th>{{ $header }}</th>
+                            <th class="srno" data-i18n="thNo">#</th>
+                            <th class="sticky" data-i18n="thPoint">Point</th>
+                            @foreach($headers as $headerIndex => $header)
+                                <th data-copy-path="headers.{{ $headerIndex }}">{{ $header }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($points as $row)
+                        @foreach($points as $rowIndex => $row)
                             <tr>
                                 <td class="srno">{{ $row['no'] }}</td>
-                                <td class="sticky">{{ $row['point'] }}</td>
-                                @foreach(($row['cells'] ?? []) as $cell)
-                                    <td>{!! $mark($cell) !!}</td>
+                                <td class="sticky" data-copy-path="points.{{ $rowIndex }}.point">{!! $em($row['point'] ?? '') !!}</td>
+                                @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
+                                    <td data-copy-path="points.{{ $rowIndex }}.cells.{{ $cellIndex }}">{!! $mark($cell) !!}</td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -243,51 +286,51 @@
     </section>
 
     <section class="panel" id="entities">
-        <h2 style="margin-bottom:14px">The 5 Business Structures</h2>
+        <h2 style="margin-bottom:14px" data-i18n="entitiesTitle">The 5 Business Structures</h2>
         <div class="grid">
-            @foreach($entities as $entity)
+            @foreach($entities as $entityIndex => $entity)
                 <article class="entity reveal" id="entity-{{ $entity['code'] ?? $entity['no'] }}">
                     <div class="no">{{ $entity['no'] }}</div>
                     <div class="title-row">
-                        <h3>{{ $entity['title'] }}</h3>
+                        <h3 data-copy-path="entities.{{ $entityIndex }}.title">{!! $em($entity['title'] ?? '') !!}</h3>
                         <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
                     </div>
                     <div class="reveal-body">
-                        <span class="label">Meaning</span>
-                        <div>{{ $entity['meaning'] }}</div>
+                        <span class="label" data-i18n="labelMeaning">Meaning</span>
+                        <div data-copy-path="entities.{{ $entityIndex }}.meaning">{!! $em($entity['meaning'] ?? '') !!}</div>
                         @if(!empty($entity['example']))
-                            <span class="label">Example</span>
-                            <div>{{ $entity['example'] }}</div>
+                            <span class="label" data-i18n="labelExample">Example</span>
+                            <div data-copy-path="entities.{{ $entityIndex }}.example">{!! $em($entity['example']) !!}</div>
                         @endif
                         @if(!empty($entity['features']))
-                            <span class="label">Key Features</span>
+                            <span class="label" data-i18n="labelFeatures">Key Features</span>
                             <ul class="point-list">
-                                @foreach($entity['features'] as $feature)
-                                    <li>{{ $feature }}</li>
+                                @foreach($entity['features'] as $itemIndex => $feature)
+                                    <li data-copy-path="entities.{{ $entityIndex }}.features.{{ $itemIndex }}">{!! $em($feature) !!}</li>
                                 @endforeach
                             </ul>
                         @endif
                         @if(!empty($entity['examples']))
-                            <span class="label">Example Businesses</span>
+                            <span class="label" data-i18n="labelExamples">Example Businesses</span>
                             <ul class="point-list">
-                                @foreach($entity['examples'] as $item)
-                                    <li>{{ $item }}</li>
+                                @foreach($entity['examples'] as $itemIndex => $item)
+                                    <li data-copy-path="entities.{{ $entityIndex }}.examples.{{ $itemIndex }}">{!! $em($item) !!}</li>
                                 @endforeach
                             </ul>
                         @endif
                         @if(!empty($entity['documents']))
-                            <span class="label">Important Documents</span>
+                            <span class="label" data-i18n="labelDocuments">Important Documents</span>
                             <ul class="point-list">
-                                @foreach($entity['documents'] as $item)
-                                    <li>{{ $item }}</li>
+                                @foreach($entity['documents'] as $itemIndex => $item)
+                                    <li data-copy-path="entities.{{ $entityIndex }}.documents.{{ $itemIndex }}">{!! $em($item) !!}</li>
                                 @endforeach
                             </ul>
                         @endif
                         @if(!empty($entity['suitable']))
-                            <span class="label">Suitable For</span>
+                            <span class="label" data-i18n="labelSuitable">Suitable For</span>
                             <ul class="point-list">
-                                @foreach($entity['suitable'] as $item)
-                                    <li>{{ $item }}</li>
+                                @foreach($entity['suitable'] as $itemIndex => $item)
+                                    <li data-copy-path="entities.{{ $entityIndex }}.suitable.{{ $itemIndex }}">{!! $em($item) !!}</li>
                                 @endforeach
                             </ul>
                         @endif
@@ -299,7 +342,7 @@
 
     <section class="panel reveal" id="expenses">
         <div class="title-row">
-            <h2>Business Expense Comparison</h2>
+            <h2 data-i18n="expensesTitle">Business Expense Comparison</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
@@ -307,30 +350,30 @@
                 <table>
                     <thead>
                         <tr>
-                            @foreach(($expenses['headers'] ?? []) as $header)
-                                <th>{{ $header }}</th>
+                            @foreach(($expenses['headers'] ?? []) as $headerIndex => $header)
+                                <th data-copy-path="expenses.headers.{{ $headerIndex }}">{{ $header }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(($expenses['rows'] ?? []) as $row)
+                        @foreach(($expenses['rows'] ?? []) as $rowIndex => $row)
                             <tr>
-                                <td class="sticky">{{ $row['item'] }}</td>
-                                @foreach(($row['cells'] ?? []) as $cell)
-                                    <td>{!! $mark($cell) !!}</td>
+                                <td class="sticky" data-copy-path="expenses.rows.{{ $rowIndex }}.item">{!! $em($row['item'] ?? '') !!}</td>
+                                @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
+                                    <td data-copy-path="expenses.rows.{{ $rowIndex }}.cells.{{ $cellIndex }}">{!! $mark($cell) !!}</td>
                                 @endforeach
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="note">{{ $plan['expense_note'] ?? '' }}</div>
+            <div class="note" data-copy-path="expense_note">{!! $em($plan['expense_note'] ?? '') !!}</div>
         </div>
     </section>
 
     <section class="panel reveal" id="owners">
         <div class="title-row">
-            <h2>Owner / Partner / Shareholder Comparison</h2>
+            <h2 data-i18n="ownersTitle">Owner / Partner / Shareholder Comparison</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
@@ -338,17 +381,17 @@
                 <table>
                     <thead>
                         <tr>
-                            @foreach(($owners['headers'] ?? []) as $header)
-                                <th>{{ $header }}</th>
+                            @foreach(($owners['headers'] ?? []) as $headerIndex => $header)
+                                <th data-copy-path="owners.headers.{{ $headerIndex }}">{{ $header }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(($owners['rows'] ?? []) as $row)
+                        @foreach(($owners['rows'] ?? []) as $rowIndex => $row)
                             <tr>
-                                <td class="sticky">{{ $row['point'] }}</td>
-                                @foreach(($row['cells'] ?? []) as $cell)
-                                    <td>{!! $mark($cell) !!}</td>
+                                <td class="sticky" data-copy-path="owners.rows.{{ $rowIndex }}.point">{!! $em($row['point'] ?? '') !!}</td>
+                                @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
+                                    <td data-copy-path="owners.rows.{{ $rowIndex }}.cells.{{ $cellIndex }}">{!! $mark($cell) !!}</td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -360,7 +403,7 @@
 
     <section class="panel reveal" id="funding">
         <div class="title-row">
-            <h2>Funding Comparison</h2>
+            <h2 data-i18n="fundingTitle">Funding Comparison</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
@@ -368,17 +411,17 @@
                 <table>
                     <thead>
                         <tr>
-                            @foreach(($funding['headers'] ?? []) as $header)
-                                <th>{{ $header }}</th>
+                            @foreach(($funding['headers'] ?? []) as $headerIndex => $header)
+                                <th data-copy-path="funding.headers.{{ $headerIndex }}">{{ $header }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(($funding['rows'] ?? []) as $row)
+                        @foreach(($funding['rows'] ?? []) as $rowIndex => $row)
                             <tr>
-                                <td class="sticky">{{ $row['source'] }}</td>
-                                @foreach(($row['cells'] ?? []) as $cell)
-                                    <td>{!! $mark($cell) !!}</td>
+                                <td class="sticky" data-copy-path="funding.rows.{{ $rowIndex }}.source">{!! $em($row['source'] ?? '') !!}</td>
+                                @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
+                                    <td data-copy-path="funding.rows.{{ $rowIndex }}.cells.{{ $cellIndex }}">{!! $mark($cell) !!}</td>
                                 @endforeach
                             </tr>
                         @endforeach
@@ -390,7 +433,7 @@
 
     <section class="panel reveal" id="stages">
         <div class="title-row">
-            <h2>From Business House to Business Empire</h2>
+            <h2 data-i18n="stagesTitle">From Business House to Business Empire</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
@@ -398,58 +441,138 @@
                 <table style="min-width:640px">
                     <thead>
                         <tr>
-                            <th class="srno">Stage</th>
-                            <th>Business Situation</th>
-                            <th>Possible Structure</th>
+                            <th class="srno" data-i18n="thStage">Stage</th>
+                            <th data-i18n="thSituation">Business Situation</th>
+                            <th data-i18n="thStructure">Possible Structure</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($stages as $stage)
+                        @foreach($stages as $stageIndex => $stage)
                             <tr>
                                 <td class="srno">{{ $stage['no'] }}</td>
-                                <td>{{ $stage['situation'] }}</td>
-                                <td><strong>{{ $stage['structure'] }}</strong></td>
+                                <td data-copy-path="stages.{{ $stageIndex }}.situation">{!! $em($stage['situation'] ?? '') !!}</td>
+                                <td data-copy-path="stages.{{ $stageIndex }}.structure">{!! $em($stage['structure'] ?? '') !!}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
-            <div class="note"><strong>Important Learning:</strong> {{ $plan['stage_note'] ?? '' }}</div>
+            <div class="note"><strong data-i18n="stageNoteLabel">Important Learning:</strong> <span data-copy-path="stage_note">{!! $em($plan['stage_note'] ?? '') !!}</span></div>
         </div>
     </section>
 
     <section class="panel reveal" id="questions">
         <div class="title-row">
-            <h2>10 Questions Before Selecting a Business Structure</h2>
+            <h2 data-i18n="questionsTitle">10 Questions Before Selecting a Business Structure</h2>
             <button type="button" class="eye-btn" aria-label="Show details" aria-expanded="false"></button>
         </div>
         <div class="reveal-body">
             <ol class="q-list">
                 @foreach($questions as $index => $question)
-                    <li><b>{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</b><span>{{ $question }}</span></li>
+                    <li><b>{{ str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT) }}</b><span data-copy-path="questions.{{ $index }}">{!! $em($question) !!}</span></li>
                 @endforeach
             </ol>
         </div>
     </section>
 
     <section class="formula">
-        <small>BNS Key Learning</small>
-        <strong>{{ $plan['formula'] ?? '' }}</strong>
-        <div>{{ $plan['disclaimer'] ?? '' }}</div>
+        <small data-i18n="formulaKicker">BNS Key Learning</small>
+        <strong data-copy-path="formula">{{ $plan['formula'] ?? '' }}</strong>
+        <div data-copy-path="disclaimer">{!! $em($plan['disclaimer'] ?? '') !!}</div>
     </section>
-    <div class="footer">Business Navachar School™ · PVT LTD Session</div>
+    <div class="footer" data-i18n="footer">Business Navachar School™ · PVT LTD Session</div>
 </div>
 <script>
 (function () {
-    const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8 11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+    const languagePacks = @json($languagePacks ?: [], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    const businessName = @json($biz, JSON_UNESCAPED_UNICODE);
+    const memberName = @json($member, JSON_UNESCAPED_UNICODE);
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+    function emphasize(text, phrases) {
+        const raw = String(text || '').trim();
+        if (!raw) return '';
+        if (raw.length <= 48 && !/[.!?…।]/.test(raw.replace(/:$/, ''))) {
+            return '<strong>' + escapeHtml(raw) + '</strong>';
+        }
+        let html = escapeHtml(raw);
+        (phrases || []).slice().sort(function (a, b) { return String(b).length - String(a).length; }).forEach(function (phrase) {
+            phrase = String(phrase || '').trim();
+            if (!phrase || phrase === '—') return;
+            const safe = escapeHtml(phrase).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            if (!safe) return;
+            html = html.replace(new RegExp(safe, 'gi'), function (match) {
+                return '<strong>' + match + '</strong>';
+            });
+        });
+        return html;
+    }
+    function mark(value, ui, phrases) {
+        const raw = String(value || '').trim();
+        const low = raw.toLowerCase();
+        if (['yes', 'y', 'true'].indexOf(low) !== -1) {
+            return '<span class="chip chip-yes">' + escapeHtml(ui.chipYes || 'Yes') + '</span>';
+        }
+        if (['no', 'n', 'false'].indexOf(low) !== -1) {
+            return '<span class="chip chip-no">' + escapeHtml(ui.chipNo || 'No') + '</span>';
+        }
+        if (raw === '—' || raw === '-') {
+            return '<span class="chip chip-dash">—</span>';
+        }
+        return emphasize(raw, phrases);
+    }
+    function getPath(obj, path) {
+        return String(path || '').split('.').reduce(function (current, key) {
+            if (current == null) return null;
+            return current[key];
+        }, obj);
+    }
+    function applyCopy(copy, ui) {
+        const phrases = [businessName, memberName].concat(copy.headers || []).concat([
+            'LLP', 'MOA', 'AOA', 'IPO', 'GST', 'ROC', 'MCA'
+        ]).filter(Boolean);
+        document.querySelectorAll('[data-copy-path]').forEach(function (el) {
+            const value = getPath(copy, el.getAttribute('data-copy-path'));
+            if (value == null || typeof value === 'object') return;
+            if (el.tagName === 'TH' || (el.tagName === 'STRONG' && el.closest('.formula'))) {
+                el.textContent = value;
+                return;
+            }
+            el.innerHTML = mark(value, ui, phrases);
+        });
+    }
+    function applyLanguage(language) {
+        const pack = languagePacks[language] || languagePacks.en || {};
+        const ui = pack.ui || {};
+        document.documentElement.lang = language;
+        document.querySelectorAll('[data-i18n]').forEach(function (el) {
+            const key = el.getAttribute('data-i18n');
+            if (key && ui[key]) el.textContent = ui[key];
+        });
+        applyCopy(pack.copy || {}, ui);
+        paintEyes();
+    }
+    window.changeLanguage = function (language, button) {
+        document.querySelectorAll('.language-buttons button').forEach(function (btn) { btn.classList.remove('active'); });
+        button.classList.add('active');
+        applyLanguage(language);
+    };
+    const eyeOpen = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
     const eyeShut = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
     function paintEyes() {
+        const pack = languagePacks[document.documentElement.lang] || languagePacks.en || {};
+        const ui = pack.ui || {};
         document.querySelectorAll('.eye-btn').forEach(function (btn) {
             const box = btn.closest('.reveal');
             const open = box && box.classList.contains('is-open');
             btn.innerHTML = open ? eyeShut : eyeOpen;
             btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-            btn.setAttribute('aria-label', open ? 'Hide details' : 'Show details');
+            btn.setAttribute('aria-label', open ? (ui.hideDetails || 'Hide details') : (ui.showDetails || 'Show details'));
         });
     }
     document.querySelectorAll('.eye-btn').forEach(function (btn) {
@@ -463,6 +586,7 @@
         });
     });
     paintEyes();
+    applyLanguage('en');
 })();
 </script>
 </body>
