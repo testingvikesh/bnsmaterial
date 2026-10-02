@@ -966,6 +966,99 @@ class MaterialModuleTest extends TestCase
         $this->assertStringNotContainsString('class="panel reveal is-open"', $html);
     }
 
+    public function test_pvt_ltd_session_generates_company_structure_comparison(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $session = ManageSession::factory()->create(['name' => 'PVT LTD Session', 'details' => 'Private Limited Company']);
+        SessionPrompt::factory()->active()->create([
+            'manage_session_id' => $session->id,
+            'title' => 'PVT LTD Details',
+            'body' => 'Company structure comparison for {{businessName}}.',
+        ]);
+        $member = User::factory()->create(['name' => 'Alice Student']);
+        MemberProfile::factory()->create([
+            'user_id' => $member->id,
+            'business_name' => 'Cadworld Infoways',
+            'business_category' => 'Trading',
+            'business_description' => 'Wires and cables trading business.',
+            'main_products_services' => 'Wires and cables',
+            'business_location' => 'Mumbai',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.material.generate'), [
+                'manage_session_id' => $session->id,
+                'user_id' => $member->id,
+            ])
+            ->assertRedirect();
+
+        $file = MaterialFile::query()->first();
+        $this->assertNotNull($file);
+        $html = Storage::disk('local')->get($file->file_path);
+        $payload = json_decode(Storage::disk('local')->get(preg_replace('/\.html$/', '.json', $file->file_path)), true);
+
+        $this->assertSame('company', $payload['format'] ?? null);
+        $this->assertCount(50, $payload['company']['points'] ?? []);
+        $this->assertStringContainsString('PVT LTD Session', $html);
+        $this->assertStringContainsString('50-Point Complete Comparison', $html);
+        $this->assertStringContainsString('Private Limited Company', $html);
+        $this->assertStringContainsString('Cadworld Infoways', $html);
+        $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringNotContainsString('Circle Time', $html);
+        $this->assertStringNotContainsString('Circle Activity', $html);
+        $this->assertStringNotContainsString('Verified', $html);
+        $this->assertStringNotContainsString('AI-Inferred', $html);
+        $this->assertStringNotContainsString('BNS Tagline Masterclass', $html);
+    }
+
+    public function test_pvt_ltd_part_two_session_generates_master_comparison(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $session = ManageSession::factory()->create(['name' => 'PVT LTD SESSION (PART2)', 'details' => 'Private Limited Part 2']);
+        SessionPrompt::factory()->active()->create([
+            'manage_session_id' => $session->id,
+            'title' => 'PVT LTD Part 2',
+            'body' => 'Business Structure Master Comparison for {{businessName}}.',
+        ]);
+        $member = User::factory()->create(['name' => 'Alice Student']);
+        MemberProfile::factory()->create([
+            'user_id' => $member->id,
+            'business_name' => 'Cadworld Infoways',
+            'business_category' => 'Trading',
+            'business_description' => 'Wires and cables trading business.',
+            'main_products_services' => 'Wires and cables',
+            'business_location' => 'Mumbai',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.material.generate'), [
+                'manage_session_id' => $session->id,
+                'user_id' => $member->id,
+            ])
+            ->assertRedirect();
+
+        $file = MaterialFile::query()->first();
+        $this->assertNotNull($file);
+        $html = Storage::disk('local')->get($file->file_path);
+        $payload = json_decode(Storage::disk('local')->get(preg_replace('/\.html$/', '.json', $file->file_path)), true);
+
+        $this->assertSame('company_part2', $payload['format'] ?? null);
+        $this->assertCount(50, $payload['company']['master'] ?? []);
+        $this->assertSame(101, $payload['company']['master'][0]['no'] ?? null);
+        $this->assertSame(200, $payload['company']['growth'][9]['no'] ?? null);
+        $this->assertStringContainsString('Business Structure Master Comparison', $html);
+        $this->assertStringContainsString('PVT LTD Session · Part 2', $html);
+        $this->assertStringContainsString('Cadworld Infoways', $html);
+        $this->assertStringContainsString('Decision-Making Comparison for Students', $html);
+        $this->assertStringContainsString('family=Poppins', $html);
+        $this->assertStringNotContainsString('Circle Time', $html);
+        $this->assertStringNotContainsString('50-Point Complete Comparison', $html);
+    }
+
     public function test_empire_view_hides_session_prompt_from_generated_html(): void
     {
         Storage::fake('local');

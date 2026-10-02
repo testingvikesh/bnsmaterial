@@ -43,6 +43,8 @@ class MaterialHtmlBuilder
             'tagline' => 'admin.material.document-tagline',
             'website' => 'admin.material.document-website',
             'sanskar' => 'admin.material.document-sanskar',
+            'company' => 'admin.material.document-company',
+            'company_part2' => 'admin.material.document-company-part2',
             default => 'admin.material.document',
         };
 
@@ -73,6 +75,7 @@ class MaterialHtmlBuilder
             'tagline' => $result['tagline'] ?? [],
             'website' => $result['website'] ?? [],
             'sanskar' => $result['sanskar'] ?? [],
+            'company' => $result['company'] ?? [],
         ])->render();
     }
 

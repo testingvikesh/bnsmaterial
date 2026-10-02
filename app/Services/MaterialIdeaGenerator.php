@@ -9,6 +9,8 @@ use App\Models\User;
 use App\Support\MaterialEmpireVision;
 use App\Support\MaterialOneTo25;
 use App\Support\MaterialReverseManagement;
+use App\Support\MaterialCompanyStructure;
+use App\Support\MaterialCompanyStructurePart2;
 use App\Support\MaterialSanskarCalendar;
 use App\Support\MaterialSessionFormat;
 use App\Support\MaterialTaglineMasterclass;
@@ -78,6 +80,14 @@ class MaterialIdeaGenerator
 
         if ($format === MaterialSessionFormat::SANSKAR) {
             return $this->generateSanskar($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
+        }
+
+        if ($format === MaterialSessionFormat::COMPANY) {
+            return $this->generateCompany($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
+        }
+
+        if ($format === MaterialSessionFormat::COMPANY_PART2) {
+            return $this->generateCompanyPart2($session, $prompt, $user, $profile, $facts, $businessName, $snapshot, $filledPrompt);
         }
 
         $local = MaterialOneTo25::for([
@@ -398,6 +408,96 @@ class MaterialIdeaGenerator
             'ideas' => [],
             'sanskar' => $plan,
             'languages' => $plan['languages'] ?? [],
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $facts
+     * @param  array<string, string>  $snapshot
+     * @return array<string, mixed>
+     */
+    private function generateCompany(
+        ManageSession $session,
+        SessionPrompt $prompt,
+        User $user,
+        MemberProfile $profile,
+        array $facts,
+        string $businessName,
+        array $snapshot,
+        string $filledPrompt
+    ): array {
+        $plan = MaterialCompanyStructure::for([
+            'business_name' => $businessName,
+            'member_name' => (string) $user->name,
+            'category' => $facts['category'],
+        ]);
+
+        return [
+            'source' => 'local',
+            'format' => MaterialSessionFormat::COMPANY,
+            'prompt' => [
+                'id' => $prompt->id,
+                'title' => $prompt->title,
+                'body' => $filledPrompt !== '' ? $filledPrompt : null,
+            ],
+            'member' => [
+                'name' => (string) $user->name,
+                'member_id' => (string) ($profile->member_id ?: ''),
+                'business_name' => $businessName,
+            ],
+            'facts' => [
+                'category' => $facts['category'],
+                'intro' => $facts['intro'],
+                'products' => $facts['products'],
+            ],
+            'snapshot' => $snapshot,
+            'ideas' => [],
+            'company' => $plan,
+        ];
+    }
+
+    /**
+     * @param  array<string, string>  $facts
+     * @param  array<string, string>  $snapshot
+     * @return array<string, mixed>
+     */
+    private function generateCompanyPart2(
+        ManageSession $session,
+        SessionPrompt $prompt,
+        User $user,
+        MemberProfile $profile,
+        array $facts,
+        string $businessName,
+        array $snapshot,
+        string $filledPrompt
+    ): array {
+        $plan = MaterialCompanyStructurePart2::for([
+            'business_name' => $businessName,
+            'member_name' => (string) $user->name,
+            'category' => $facts['category'],
+        ]);
+
+        return [
+            'source' => 'local',
+            'format' => MaterialSessionFormat::COMPANY_PART2,
+            'prompt' => [
+                'id' => $prompt->id,
+                'title' => $prompt->title,
+                'body' => $filledPrompt !== '' ? $filledPrompt : null,
+            ],
+            'member' => [
+                'name' => (string) $user->name,
+                'member_id' => (string) ($profile->member_id ?: ''),
+                'business_name' => $businessName,
+            ],
+            'facts' => [
+                'category' => $facts['category'],
+                'intro' => $facts['intro'],
+                'products' => $facts['products'],
+            ],
+            'snapshot' => $snapshot,
+            'ideas' => [],
+            'company' => $plan,
         ];
     }
 

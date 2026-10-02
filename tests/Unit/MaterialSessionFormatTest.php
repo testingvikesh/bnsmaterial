@@ -26,6 +26,59 @@ class MaterialSessionFormatTest extends TestCase
         $this->assertSame(MaterialSessionFormat::WEBSITE, MaterialSessionFormat::resolve($website, $prompt));
         $sanskar = new ManageSession(['name' => '16 Saskar']);
         $this->assertSame(MaterialSessionFormat::SANSKAR, MaterialSessionFormat::resolve($sanskar, $prompt));
+        $company = new ManageSession(['name' => 'PVT LTD Session']);
+        $this->assertSame(MaterialSessionFormat::COMPANY, MaterialSessionFormat::resolve($company, $prompt));
+        $part2 = new ManageSession(['name' => 'PVT LTD SESSION (PART2)']);
+        $this->assertSame(MaterialSessionFormat::COMPANY_PART2, MaterialSessionFormat::resolve($part2, $prompt));
+    }
+
+    public function test_pvt_ltd_session_wins_even_if_prompt_mentions_business_empire(): void
+    {
+        $session = new ManageSession(['name' => 'PVT LTD', 'details' => 'Private Limited Company']);
+        $prompt = new SessionPrompt([
+            'title' => 'PVT LTD Details',
+            'body' => 'From Business House to Business Empire comparison for students.',
+        ]);
+
+        $this->assertSame(MaterialSessionFormat::COMPANY, MaterialSessionFormat::resolve($session, $prompt));
+    }
+
+    public function test_company_structure_has_fifty_points_and_no_circle_time(): void
+    {
+        $plan = \App\Support\MaterialCompanyStructure::for([
+            'business_name' => 'Cadworld Infoways',
+            'member_name' => 'Alice',
+            'category' => 'Trading',
+        ]);
+
+        $this->assertCount(50, $plan['points']);
+        $this->assertCount(5, $plan['entities']);
+        $this->assertCount(5, $plan['stages']);
+        $this->assertCount(10, $plan['questions']);
+        $this->assertSame('Private Limited Company', $plan['entities'][3]['title']);
+        $this->assertSame('Cadworld Infoways', $plan['business_name']);
+        $json = json_encode($plan);
+        $this->assertStringNotContainsString('Circle Time', $json);
+        $this->assertStringNotContainsString('Circle Activity', $json);
+    }
+
+    public function test_company_structure_part_two_has_points_101_to_200(): void
+    {
+        $plan = \App\Support\MaterialCompanyStructurePart2::for([
+            'business_name' => 'Cadworld Infoways',
+        ]);
+
+        $this->assertCount(50, $plan['master']);
+        $this->assertSame(101, $plan['master'][0]['no']);
+        $this->assertSame(150, $plan['master'][49]['no']);
+        $this->assertCount(20, $plan['finance']);
+        $this->assertSame(151, $plan['finance'][0]['no']);
+        $this->assertCount(10, $plan['legal']);
+        $this->assertCount(10, $plan['management']);
+        $this->assertCount(10, $plan['growth']);
+        $this->assertSame(200, $plan['growth'][9]['no']);
+        $this->assertCount(15, $plan['decisions']);
+        $this->assertStringContainsString('Capital Market', $plan['formula']);
     }
 
     public function test_sixteen_sanskar_name_wins_even_if_prompt_mentions_tagline(): void

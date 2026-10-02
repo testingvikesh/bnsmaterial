@@ -19,6 +19,10 @@ class MaterialSessionFormat
 
     public const SANSKAR = 'sanskar';
 
+    public const COMPANY = 'company';
+
+    public const COMPANY_PART2 = 'company_part2';
+
     public static function resolve(ManageSession $session, ?SessionPrompt $prompt = null): string
     {
         $nameHay = strtolower(trim(
@@ -27,6 +31,34 @@ class MaterialSessionFormat
             ($prompt?->title ?? '')
         ));
         $hay = trim($nameHay.' '.strtolower((string) ($prompt?->body ?? '')));
+
+        $isCompany = self::contains($nameHay, [
+            'pvt ltd',
+            'pvt. ltd',
+            'pvt.ltd',
+            'pvt-ltd',
+            'pvtltd',
+            'private limited',
+            'public limited',
+            'proprietorship vs',
+            'company structure',
+            'business structure',
+            'company type',
+        ]) || self::contains($hay, [
+            'proprietorship vs partnership vs llp',
+            'pvt ltd session',
+            'private limited company session',
+            'complete comparison for students',
+            'business structure master comparison',
+        ]);
+
+        if ($isCompany && self::isCompanyPartTwo($nameHay.' '.$hay)) {
+            return self::COMPANY_PART2;
+        }
+
+        if ($isCompany) {
+            return self::COMPANY;
+        }
 
         if (self::contains($nameHay, [
             '16 sanskar',
@@ -108,6 +140,19 @@ class MaterialSessionFormat
         }
 
         return self::ONE_TO_25;
+    }
+
+    private static function isCompanyPartTwo(string $hay): bool
+    {
+        return self::contains($hay, [
+            'part 2',
+            'part2',
+            'part-2',
+            '(part2)',
+            '(part 2)',
+            'session 2',
+            'part two',
+        ]);
     }
 
     /**
