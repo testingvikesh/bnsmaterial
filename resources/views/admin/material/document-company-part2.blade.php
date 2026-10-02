@@ -62,7 +62,7 @@
         .brand-mark small { display: block; color: #ffb800; letter-spacing: .12em; text-transform: uppercase; font-size: 10px; font-weight: 800; }
         .brand-mark strong { display: block; font-size: 18px; line-height: 1.2; }
         .top-meta { color: #cbd5e1; font-size: 13px; font-weight: 600; text-align: right; }
-        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; }
+        .language-buttons { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: flex-end; margin-bottom: 8px; align-items: center; }
         .language-buttons button {
             border: 1px solid rgba(255,255,255,.28);
             background: rgba(255,255,255,.08);
@@ -118,13 +118,56 @@
         tbody tr:nth-child(even) td { background: #fffaf4; }
         td.sticky { position: sticky; left: 0; background: #fff7ed; font-weight: 800; color: #0a1d37; min-width: 190px; }
         .srno { width: 64px; font-weight: 800; color: #c2410c; text-align: center; }
+        tr[id] { scroll-margin-top: 96px; }
+        tr.is-jump td { outline: 2px solid #ff6b00; outline-offset: -2px; background: #fff3e0 !important; }
         .chip {
             display: inline-flex; align-items: center; justify-content: center;
-            min-width: 34px; padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 12px;
+            width: 28px; height: 28px; min-width: 28px; padding: 0;
+            border-radius: 50%; font-weight: 800; line-height: 1;
         }
-        .chip-yes { background: #dcfce7; color: #15803d; }
-        .chip-no { background: #fee2e2; color: #b91c1c; }
-        .chip-dash { background: #f1f5f9; color: #64748b; }
+        .chip svg { width: 14px; height: 14px; display: block; }
+        .chip-yes { background: #16a34a; color: #fff; }
+        .chip-no { background: #dc2626; color: #fff; }
+        .chip-dash {
+            width: auto; min-width: 28px; height: 22px; padding: 0 8px;
+            border-radius: 999px; background: #e2e8f0; color: #64748b; font-size: 12px;
+        }
+        .summary-btn {
+            border: 1px solid rgba(255,255,255,.28);
+            background: #ff6b00; color: #fff; padding: 6px 12px; border-radius: 999px;
+            cursor: pointer; font-weight: 800; font-size: 12px; white-space: nowrap;
+        }
+        .summary-btn:hover { background: #fff; color: #071422; }
+        .summary-overlay {
+            position: fixed; inset: 0; z-index: 80; display: none;
+            background: rgba(7, 20, 34, .48);
+        }
+        .summary-overlay.is-open { display: block; }
+        .summary-card {
+            position: absolute; top: 78px; right: 18px;
+            width: min(440px, calc(100vw - 36px));
+            max-height: calc(100vh - 110px);
+            overflow: auto;
+            background: #fffdf9; color: #10243d; border-radius: 22px;
+            box-shadow: 0 24px 60px rgba(7, 20, 34, .28);
+            padding: 16px 16px 20px;
+        }
+        .summary-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .summary-head h3 { margin: 0; font-size: 18px; color: #071422; }
+        .summary-close {
+            width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line);
+            background: #fff7ed; color: #c2410c; font-size: 22px; line-height: 1; cursor: pointer;
+        }
+        .summary-group { margin-top: 12px; }
+        .summary-group h4 { margin: 0 0 8px; color: #c2410c; font-size: 12px; letter-spacing: .04em; }
+        .summary-list { display: grid; gap: 6px; }
+        .summary-link {
+            display: flex; gap: 10px; align-items: flex-start; text-decoration: none; color: #0a1d37;
+            background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px;
+            font-size: 13px; font-weight: 700; line-height: 1.4;
+        }
+        .summary-link:hover { border-color: #ff6b00; background: #fff7ed; }
+        .summary-link b { color: #ff6b00; min-width: 32px; }
         .note {
             background: #fff7ed; border: 1px solid #fdba74; border-radius: 16px;
             padding: 14px 16px; font-weight: 600; line-height: 1.6; margin-top: 14px;
@@ -145,7 +188,7 @@
         }
         @media print {
             .topbar, .nav { position: static; }
-            .language-buttons, .eye-btn { display: none !important; }
+            .language-buttons, .eye-btn, .summary-btn, .summary-overlay { display: none !important; }
             .reveal-body { display: block !important; }
             body { background: #fff; }
         }
@@ -176,14 +219,16 @@
         'Compliance', 'Funding', 'Capital Market',
     ], $headers), fn ($value) => $value !== '' && $value !== '—'));
     $em = fn ($text) => \App\Support\MaterialEmphasis::html((string) $text, $phrases);
-    $mark = function ($value) use ($em) {
+    $yesIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+    $noIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    $mark = function ($value) use ($em, $yesIcon, $noIcon) {
         $raw = str_replace(['✅', '❌'], ['Yes', 'No'], trim((string) $value));
         $low = strtolower($raw);
         if (in_array($low, ['yes', 'y', 'true'], true)) {
-            return '<span class="chip chip-yes">Yes</span>';
+            return '<span class="chip chip-yes" title="Yes" aria-label="Yes">'.$yesIcon.'</span>';
         }
         if (in_array($low, ['no', 'n', 'false'], true)) {
-            return '<span class="chip chip-no">No</span>';
+            return '<span class="chip chip-no" title="No" aria-label="No">'.$noIcon.'</span>';
         }
         if ($raw === '—' || $raw === '-') {
             return '<span class="chip chip-dash">—</span>';
@@ -203,6 +248,7 @@
         </div>
         <div class="top-meta">
             <div class="language-buttons">
+                <button type="button" class="summary-btn" id="summaryOpen" data-i18n="summaryBtn">Summary</button>
                 <button class="active" onclick="changeLanguage('en', this)">ENGLISH</button>
                 <button onclick="changeLanguage('gu', this)">ગુજરાતી</button>
                 <button onclick="changeLanguage('hi', this)">हिन्दी</button>
@@ -248,7 +294,7 @@
                         </thead>
                         <tbody>
                             @foreach($block['rows'] as $rowIndex => $row)
-                                <tr>
+                                <tr id="point-{{ $row['no'] }}">
                                     <td class="srno">{{ $row['no'] }}</td>
                                     <td class="sticky" data-copy-path="{{ $block['path'] }}.{{ $rowIndex }}.point">{!! $em($row['point'] ?? '') !!}</td>
                                     @foreach(($row['cells'] ?? []) as $cellIndex => $cell)
@@ -279,7 +325,7 @@
                     </thead>
                     <tbody>
                         @foreach($decisions as $rowIndex => $row)
-                            <tr>
+                            <tr id="decision-{{ $rowIndex + 1 }}">
                                 <td class="sticky" data-copy-path="decisions.{{ $rowIndex }}.situation">{!! $em($row['situation'] ?? '') !!}</td>
                                 <td data-copy-path="decisions.{{ $rowIndex }}.structures">{!! $em($row['structures'] ?? '') !!}</td>
                             </tr>
@@ -296,6 +342,32 @@
         <div data-copy-path="disclaimer">{!! $em($plan['disclaimer'] ?? '') !!}</div>
     </section>
     <div class="footer" data-i18n="footer2">Business Navachar School™ · PVT LTD Session (Part 2)</div>
+</div>
+<div class="summary-overlay" id="summaryPanel">
+    <div class="summary-card">
+        <div class="summary-head">
+            <h3 data-i18n="summaryTitle">All Points</h3>
+            <button type="button" class="summary-close" id="summaryClose" aria-label="Close">×</button>
+        </div>
+        @foreach($blocks as $block)
+            <div class="summary-group">
+                <h4 data-i18n="{{ $block['titleKey'] }}">{{ $block['title'] }}</h4>
+                <div class="summary-list">
+                    @foreach($block['rows'] as $rowIndex => $row)
+                        <a class="summary-link" href="#point-{{ $row['no'] }}" data-jump="#point-{{ $row['no'] }}"><b>{{ $row['no'] }}</b><span data-copy-path="{{ $block['path'] }}.{{ $rowIndex }}.point">{{ $row['point'] }}</span></a>
+                    @endforeach
+                </div>
+            </div>
+        @endforeach
+        <div class="summary-group">
+            <h4 data-i18n="decisionsTitle">Decision-Making Comparison for Students</h4>
+            <div class="summary-list">
+                @foreach($decisions as $rowIndex => $row)
+                    <a class="summary-link" href="#decision-{{ $rowIndex + 1 }}" data-jump="#decision-{{ $rowIndex + 1 }}"><b>{{ str_pad((string) ($rowIndex + 1), 2, '0', STR_PAD_LEFT) }}</b><span data-copy-path="decisions.{{ $rowIndex }}.situation">{{ $row['situation'] }}</span></a>
+                @endforeach
+            </div>
+        </div>
+    </div>
 </div>
 <script>
 (function () {
@@ -330,11 +402,13 @@
     function mark(value, ui, phrases) {
         const raw = String(value || '').replace(/✅/g, 'Yes').replace(/❌/g, 'No').trim();
         const low = raw.toLowerCase();
+        const yesLabel = ui.chipYes || 'Yes';
+        const noLabel = ui.chipNo || 'No';
         if (['yes', 'y', 'true'].indexOf(low) !== -1) {
-            return '<span class="chip chip-yes">' + escapeHtml(ui.chipYes || 'Yes') + '</span>';
+            return '<span class="chip chip-yes" title="' + escapeHtml(yesLabel) + '" aria-label="' + escapeHtml(yesLabel) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>';
         }
         if (['no', 'n', 'false'].indexOf(low) !== -1) {
-            return '<span class="chip chip-no">' + escapeHtml(ui.chipNo || 'No') + '</span>';
+            return '<span class="chip chip-no" title="' + escapeHtml(noLabel) + '" aria-label="' + escapeHtml(noLabel) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>';
         }
         if (raw === '—' || raw === '-') {
             return '<span class="chip chip-dash">—</span>';
@@ -354,6 +428,10 @@
         document.querySelectorAll('[data-copy-path]').forEach(function (el) {
             const value = getPath(copy, el.getAttribute('data-copy-path'));
             if (value == null || typeof value === 'object') return;
+            if (el.closest('.summary-link')) {
+                el.textContent = value;
+                return;
+            }
             if (el.tagName === 'TH' || (el.tagName === 'STRONG' && el.closest('.formula'))) {
                 el.textContent = value;
                 return;
@@ -402,6 +480,49 @@
     });
     paintEyes();
     applyLanguage('en');
+
+    const summaryPanel = document.getElementById('summaryPanel');
+    function closeSummary() {
+        if (summaryPanel) summaryPanel.classList.remove('is-open');
+    }
+    function openSummary() {
+        if (summaryPanel) summaryPanel.classList.add('is-open');
+    }
+    function jumpTo(selector) {
+        const el = document.querySelector(selector);
+        if (!el) return;
+        const box = el.closest('.reveal');
+        if (box) box.classList.add('is-open');
+        paintEyes();
+        closeSummary();
+        document.querySelectorAll('.is-jump').forEach(function (node) { node.classList.remove('is-jump'); });
+        el.classList.add('is-jump');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    const summaryOpen = document.getElementById('summaryOpen');
+    const summaryClose = document.getElementById('summaryClose');
+    if (summaryOpen) summaryOpen.addEventListener('click', function (event) {
+        event.preventDefault();
+        openSummary();
+    });
+    if (summaryClose) summaryClose.addEventListener('click', function (event) {
+        event.preventDefault();
+        closeSummary();
+    });
+    if (summaryPanel) {
+        summaryPanel.addEventListener('click', function (event) {
+            if (event.target === summaryPanel) closeSummary();
+        });
+    }
+    document.querySelectorAll('[data-jump]').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            jumpTo(link.getAttribute('data-jump'));
+        });
+    });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeSummary();
+    });
 })();
 </script>
 </body>

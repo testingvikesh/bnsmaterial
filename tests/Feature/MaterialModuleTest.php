@@ -1013,6 +1013,10 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('"mr"', $html);
         $this->assertStringContainsString('એકમાલિકી', $html);
         $this->assertStringContainsString('<strong>', $html);
+        $this->assertStringContainsString('summary-btn', $html);
+        $this->assertStringContainsString('id="point-1"', $html);
+        $this->assertStringContainsString('chip chip-yes', $html);
+        $this->assertStringContainsString('chip chip-no', $html);
         $this->assertStringNotContainsString('Circle Time', $html);
         $this->assertStringNotContainsString('Circle Activity', $html);
         $this->assertStringNotContainsString('Verified', $html);
@@ -1069,6 +1073,10 @@ class MaterialModuleTest extends TestCase
         $this->assertStringContainsString('"mr"', $html);
         $this->assertStringContainsString('એકમાલિકી', $html);
         $this->assertStringContainsString('<strong>', $html);
+        $this->assertStringContainsString('summary-btn', $html);
+        $this->assertStringContainsString('id="point-101"', $html);
+        $this->assertStringContainsString('chip chip-yes', $html);
+        $this->assertStringContainsString('chip chip-no', $html);
         $this->assertStringNotContainsString('Circle Time', $html);
         $this->assertStringNotContainsString('50-Point Complete Comparison', $html);
     }
