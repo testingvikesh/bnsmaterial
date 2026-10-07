@@ -49,6 +49,19 @@ We would like to extend our thanks to the following sponsors for funding Laravel
 - **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
 - **[Lendio](https://lendio.com)**
 
+## Deployment (live)
+
+Pushing to `main` (or running the **Deploy to live** workflow manually from the Actions tab) runs the test suite and then deploys the app to the live server via [`.github/workflows/deploy-live.yml`](.github/workflows/deploy-live.yml).
+
+Add the server credentials once, in **Settings → Secrets and variables → Actions** (repository secrets or the `live` environment):
+
+| Transport | Secrets |
+|-----------|---------|
+| SSH (preferred; also runs migrations and cache warm-up) | `LIVE_SSH_HOST`, `LIVE_SSH_USER`, `LIVE_SSH_KEY`, `LIVE_DEPLOY_PATH`, optional `LIVE_SSH_PORT` |
+| FTP / FTPS (upload only) | `LIVE_FTP_HOST`, `LIVE_FTP_USER`, `LIVE_FTP_PASSWORD`, `LIVE_FTP_PATH` (ends with `/`) |
+
+The server's `.env` and everything under `storage/` are never overwritten. Before the first deploy, create `.env` on the server from `.env.example` with `APP_ENV=production`, `APP_DEBUG=false`, the live `APP_URL`, database credentials and an `APP_KEY` (`php artisan key:generate`). When deploying over FTP, finish the release by running `php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache` on the server.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

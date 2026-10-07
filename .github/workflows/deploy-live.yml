@@ -1,0 +1,176 @@
+# Deploys the application to the live (production) server.
+#
+# Runs automatically on every push to `main` and can also be started by hand
+# from the Actions tab ("Run workflow"). The deploy job only runs after the
+# test suite passes.
+#
+# Configure ONE of the transports below in the repository's
+# Settings > Secrets and variables > Actions > "live" environment:
+#
+#   SSH (preferred - also runs migrations and cache warm-up after upload)
+#     LIVE_SSH_HOST      e.g. server.example.com
+#     LIVE_SSH_USER      cPanel / shell username
+#     LIVE_SSH_KEY       private key (PEM) whose public half is authorised on the server
+#     LIVE_SSH_PORT      optional, defaults to 22
+#     LIVE_DEPLOY_PATH   absolute path of the app root on the server, e.g. /home/user/public_html
+#
+#   FTP / FTPS (upload only - run `php artisan migrate --force` on the server yourself)
+#     LIVE_FTP_HOST      e.g. ftp.example.com
+#     LIVE_FTP_USER
+#     LIVE_FTP_PASSWORD
+#     LIVE_FTP_PATH      remote directory, must end with "/" e.g. public_html/
+#
+# The server's `.env` and the contents of `storage/` are never touched.
+
+name: Deploy to live
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-live
+  cancel-in-progress: false
+
+env:
+  PHP_VERSION: '8.2'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, curl, sqlite3, pdo_sqlite, zip
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare test environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Run tests
+        run: php artisan test
+
+  deploy:
+    name: Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: live
+    env:
+      USE_SSH: ${{ secrets.LIVE_SSH_HOST != '' }}
+      USE_FTP: ${{ secrets.LIVE_SSH_HOST == '' && secrets.LIVE_FTP_HOST != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check deploy configuration
+        if: env.USE_SSH != 'true' && env.USE_FTP != 'true'
+        run: |
+          echo "::error::No live server configured. Add LIVE_SSH_* or LIVE_FTP_* secrets to the 'live' environment (see .github/workflows/deploy-live.yml)."
+          exit 1
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, xml, curl, zip
+          coverage: none
+
+      - name: Install production dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+      - name: Remove files that must not be uploaded
+        run: |
+          rm -rf .git .github tests node_modules
+          rm -f .env .phpunit.result.cache phpunit.xml
+          rm -f .editorconfig .gitattributes .gitignore README.md package.json vite.config.js
+          find storage -type f ! -name .gitignore -delete
+
+      # ------------------------------------------------------------------ SSH
+      - name: Set up SSH
+        if: env.USE_SSH == 'true'
+        env:
+          SSH_KEY: ${{ secrets.LIVE_SSH_KEY }}
+          SSH_HOST: ${{ secrets.LIVE_SSH_HOST }}
+          SSH_PORT: ${{ secrets.LIVE_SSH_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Upload via rsync
+        if: env.USE_SSH == 'true'
+        env:
+          SSH_HOST: ${{ secrets.LIVE_SSH_HOST }}
+          SSH_USER: ${{ secrets.LIVE_SSH_USER }}
+          SSH_PORT: ${{ secrets.LIVE_SSH_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.LIVE_DEPLOY_PATH }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p $SSH_PORT" \
+            --exclude='.env' \
+            --exclude='storage/app/**' \
+            --exclude='storage/logs/**' \
+            --exclude='storage/framework/cache/**' \
+            --exclude='storage/framework/sessions/**' \
+            --exclude='storage/framework/views/**' \
+            --exclude='public/storage' \
+            ./ "$SSH_USER@$SSH_HOST:$DEPLOY_PATH/"
+
+      - name: Run post-deploy commands
+        if: env.USE_SSH == 'true'
+        env:
+          SSH_HOST: ${{ secrets.LIVE_SSH_HOST }}
+          SSH_USER: ${{ secrets.LIVE_SSH_USER }}
+          SSH_PORT: ${{ secrets.LIVE_SSH_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.LIVE_DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "set -e
+            cd '$DEPLOY_PATH'
+            mkdir -p storage/app/public storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache
+            chmod -R ug+rwX storage bootstrap/cache
+            if [ ! -f .env ]; then
+              echo 'ERROR: .env is missing on the server. Create it from .env.example before deploying.' >&2
+              exit 1
+            fi
+            php artisan down --retry=30 || true
+            php artisan migrate --force
+            php artisan storage:link || true
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan up"
+
+      # ------------------------------------------------------------------ FTP
+      - name: Upload via FTP
+        if: env.USE_FTP == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.LIVE_FTP_HOST }}
+          username: ${{ secrets.LIVE_FTP_USER }}
+          password: ${{ secrets.LIVE_FTP_PASSWORD }}
+          server-dir: ${{ secrets.LIVE_FTP_PATH }}
+          local-dir: ./
+          state-name: .ftp-deploy-sync-state.json
+          exclude: |
+            .env
+            storage/app/**
+            storage/logs/**
+            storage/framework/cache/**
+            storage/framework/sessions/**
+            storage/framework/views/**
+            public/storage
+
+      - name: FTP post-deploy reminder
+        if: env.USE_FTP == 'true'
+        run: |
+          echo "::notice::Files uploaded over FTP. Run 'php artisan migrate --force && php artisan config:cache && php artisan route:cache && php artisan view:cache' on the server (cPanel Terminal) to finish the release."
